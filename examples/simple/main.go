@@ -34,10 +34,7 @@ func (d *countTheDotsValue) Set(s string) error {
 }
 
 func CountTheDots(v *uint, name, env, usage string) *config.Flag {
-	return config.HintType(
-		config.Var((*countTheDotsValue)(v), name, env, usage),
-		"dotdotdot",
-	)
+	return config.Var((*countTheDotsValue)(v), name, env, usage).HintType("dotdotdot")
 }
 
 func main() {
@@ -48,7 +45,7 @@ func main() {
 	)
 
 	err := config.Parse(
-		config.Required(config.V(&flagA, "flag-a", "FLAG_A", "flag A")),
+		config.V(&flagA, "flag-a", "FLAG_A", "flag A").Require(),
 		config.V(&flagB, "flag-b", "FLAG_B", ""),
 		CountTheDots(&flagC, "flag-c", "FLAG_C", "flag C"),
 	)
