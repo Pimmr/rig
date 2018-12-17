@@ -37,6 +37,19 @@ func CountTheDots(v *uint, name, env, usage string) *config.Flag {
 	return config.Var((*countTheDotsValue)(v), name, env, usage).HintType("dotdotdot")
 }
 
+func RangeValidator(min, max int) func(int) error {
+	return func(i int) error {
+		if i < min {
+			return fmt.Errorf("integer should be greater than %d", min)
+		}
+		if i > max {
+			return fmt.Errorf("integer should be less than %d", max)
+		}
+
+		return nil
+	}
+}
+
 func main() {
 	var (
 		flagA int
@@ -45,7 +58,7 @@ func main() {
 	)
 
 	err := config.Parse(
-		config.V(&flagA, "flag-a", "FLAG_A", "flag A").Require(),
+		config.Int(&flagA, "flag-a", "FLAG_A", "flag A", RangeValidator(1, 667)).Require(),
 		config.V(&flagB, "flag-b", "FLAG_B", ""),
 		CountTheDots(&flagC, "flag-c", "FLAG_C", "flag C"),
 	)

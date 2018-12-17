@@ -294,9 +294,35 @@ func (i *intValue) Set(s string) error {
 	return err
 }
 
-func Int(v *int, flag, env, usage string) *Flag {
+type IntValidator func(int) error
+
+type intValidators struct {
+	*intValue
+	validators []IntValidator
+}
+
+func (v intValidators) Set(s string) error {
+	err := v.intValue.Set(s)
+	if err != nil {
+		return err
+	}
+
+	for _, validator := range v.validators {
+		err = validator(int(*v.intValue))
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func Int(v *int, flag, env, usage string, validators ...IntValidator) *Flag {
 	return &Flag{
-		Value:    (*intValue)(v),
+		Value: intValidators{
+			intValue:   (*intValue)(v),
+			validators: validators,
+		},
 		Name:     flag,
 		Env:      env,
 		Usage:    usage,
