@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 
@@ -34,10 +35,16 @@ func (d *countTheDotsValue) Set(s string) error {
 }
 
 func CountTheDots(v *uint, name, env, usage string) *config.Flag {
-	return config.Var((*countTheDotsValue)(v), name, env, usage).HintType("dotdotdot")
+	return config.TypeHint(
+		config.Var(
+			(*countTheDotsValue)(v), name, env, usage,
+			VarToIntValidator(RangeValidator(1, 8)),
+		),
+		"dotdotdot",
+	)
 }
 
-func RangeValidator(min, max int) func(int) error {
+func RangeValidator(min, max int) config.IntValidator {
 	return func(i int) error {
 		if i < min {
 			return fmt.Errorf("integer should be greater than %d", min)
@@ -50,6 +57,17 @@ func RangeValidator(min, max int) func(int) error {
 	}
 }
 
+func VarToIntValidator(validator config.IntValidator) config.VarValidator {
+	return func(v flag.Value) error {
+		i, ok := v.(*countTheDotsValue)
+		if !ok {
+			return fmt.Errorf("expected type *int")
+		}
+
+		return validator(int(*i))
+	}
+}
+
 func main() {
 	var (
 		flagA int
@@ -58,8 +76,8 @@ func main() {
 	)
 
 	err := config.Parse(
-		config.Int(&flagA, "flag-a", "FLAG_A", "flag A", RangeValidator(1, 667)).Require(),
-		config.V(&flagB, "flag-b", "FLAG_B", ""),
+		config.Required(config.Int(&flagA, "flag-a", "FLAG_A", "flag A", RangeValidator(1, 667))),
+		config.String(&flagB, "flag-b", "FLAG_B", ""),
 		CountTheDots(&flagC, "flag-c", "FLAG_C", "flag C"),
 	)
 	if err != nil {
