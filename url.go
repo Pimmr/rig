@@ -16,7 +16,7 @@ func (v urlValidators) Set(s string) error {
 	}
 
 	for _, validator := range v.validators {
-		err = validator(v.urlValue.URL)
+		err = validator(*v.urlValue.URL)
 		if err != nil {
 			return err
 		}
@@ -26,20 +26,24 @@ func (v urlValidators) Set(s string) error {
 }
 
 type urlValue struct {
-	*url.URL
+	URL **url.URL
 }
 
 func (u urlValue) String() string {
-	return u.URL.String()
+	if *u.URL == nil {
+		return ""
+	}
+
+	return (*u.URL).String()
 }
 
 func (u *urlValue) Set(s string) error {
-	parsed, err := url.Parse(s)
-	u.URL = parsed
+	v, err := url.Parse(s)
+	*u.URL = v
 	return err
 }
 
-func URL(v *url.URL, flag, env, usage string, validators ...URLValidator) *Flag {
+func URL(v **url.URL, flag, env, usage string, validators ...URLValidator) *Flag {
 	return &Flag{
 		Value: urlValidators{
 			urlValue: &urlValue{
