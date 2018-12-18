@@ -22,7 +22,7 @@ type Flag struct {
 func (f *Flag) Set(v string) error {
 	err := f.Value.Set(v)
 	if err != nil {
-		return err // TODO(yazgazan): wrap error
+		return err
 	}
 
 	f.set = true
@@ -57,9 +57,6 @@ type Config struct {
 }
 
 func (c *Config) Parse(arguments []string) error {
-	// TODO(yazgazan): support https://golang.org/pkg/flag/#FlagSet.ErrorHandling
-	// TODO(yazgazan): support https://golang.org/pkg/flag/#FlagSet.Arg
-	// TODO(yazgazan): support https://golang.org/pkg/flag/#FlagSet.Args
 	c.FlagSet.Usage = c.Usage
 
 	for _, f := range c.Flags {
@@ -71,7 +68,7 @@ func (c *Config) Parse(arguments []string) error {
 
 	err := c.FlagSet.Parse(arguments)
 	if err != nil {
-		return err // TODO(yazgazan): wrap error
+		return c.handleError(err)
 	}
 
 	for _, f := range c.Flags {
@@ -86,14 +83,14 @@ func (c *Config) Parse(arguments []string) error {
 		if f.Name != "" { // we want to maintain `"flag".FlagSet.Visit`'s behaviour
 			err = c.FlagSet.Set(f.Name, v)
 			if err != nil {
-				return err
+				return c.handleError(errors.Wrapf(err, "invalid value %q for env variable %q", v, f.Env))
 			}
 			continue
 		}
 
 		err = f.Set(v)
 		if err != nil {
-			return err
+			return c.handleError(errors.Wrapf(err, "invalid value %q for env variable %q", v, f.Env))
 		}
 	}
 
@@ -112,6 +109,26 @@ func (c *Config) Parse(arguments []string) error {
 	}
 
 	return nil
+}
+
+func (c *Config) Arg(i int) string {
+	return c.FlagSet.Arg(i)
+}
+
+func (c *Config) Args() []string {
+	return c.FlagSet.Args()
+}
+
+func (c *Config) handleError(err error) error {
+	_, _ = fmt.Fprintf(c.FlagSet.Output(), "%s\n", err)
+	c.Usage()
+	switch c.FlagSet.ErrorHandling() {
+	case flag.ExitOnError:
+		os.Exit(2)
+	case flag.PanicOnError:
+		panic(err)
+	}
+	return err
 }
 
 func (c *Config) Usage() {
