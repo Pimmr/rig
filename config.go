@@ -43,14 +43,6 @@ func (f Flag) missingError() error {
 	return errors.Errorf("missing environment variable %s", f.Env)
 }
 
-func (f *Flag) Require() *Flag {
-	return Required(f)
-}
-
-func (f *Flag) HintType(typeHint string) *Flag {
-	return HintType(f, typeHint)
-}
-
 func Parse(flags ...*Flag) error {
 	config := &Config{
 		FlagSet: flag.NewFlagSet(os.Args[0], flag.ExitOnError),
@@ -175,7 +167,7 @@ func Required(f *Flag) *Flag {
 	}
 }
 
-func HintType(f *Flag, typeHint string) *Flag {
+func TypeHint(f *Flag, typeHint string) *Flag {
 	return &Flag{
 		Value:    f.Value,
 		Name:     f.Name,
