@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"reflect"
 
 	"github.com/pkg/errors"
 )
@@ -190,5 +191,66 @@ func TypeHint(f *Flag, typeHint string) *Flag {
 		Usage:    f.Usage,
 		Required: f.Required,
 		TypeHint: typeHint,
+	}
+}
+
+type Generator func() flag.Value
+
+type sliceValue struct {
+	value      reflect.Value
+	generator  Generator
+	validators []VarValidator
+}
+
+func (vs sliceValue) String() string {
+	return "[...]"
+}
+
+func (vs sliceValue) Set(s string) error {
+	if vs.value.Kind() != reflect.Ptr {
+		return errors.Errorf("expected pointer to slice, got %s instead", vs.value.Kind())
+	}
+	ind := reflect.Indirect(vs.value)
+	if ind.Kind() != reflect.Slice {
+		return errors.Errorf("expected pointer to slice, got pointer to %s instead", ind.Kind())
+	}
+	if !ind.CanSet() {
+		return errors.Errorf("expected pointer to slice to be settable")
+	}
+
+	v := vs.generator()
+	err := v.Set(s)
+	if err != nil {
+		return err
+	}
+
+	for _, validator := range vs.validators {
+		err = validator(v)
+		if err != nil {
+			return err
+		}
+	}
+
+	vv := reflect.Indirect(reflect.ValueOf(v))
+	if !vv.Type().ConvertibleTo(ind.Type().Elem()) {
+		return errors.Errorf("type %s cannot be converted to %s", vv.Type(), ind.Type().Elem())
+	}
+	vv = vv.Convert(ind.Type().Elem())
+	ind.Set(reflect.Append(ind, vv))
+
+	return nil
+}
+
+func Repeat(v interface{}, generator Generator, flag, env, usage string, validators ...VarValidator) *Flag {
+	return &Flag{
+		Value: sliceValue{
+			value:      reflect.ValueOf(v),
+			generator:  generator,
+			validators: validators,
+		},
+		Name:     flag,
+		Env:      env,
+		Usage:    usage,
+		TypeHint: "repeatable",
 	}
 }

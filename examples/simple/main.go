@@ -68,17 +68,25 @@ func VarToIntValidator(validator config.IntValidator) config.VarValidator {
 	}
 }
 
+func genString() flag.Value {
+	var s string
+
+	return (*config.StringValue)(&s)
+}
+
 func main() {
 	var (
 		flagA int
 		flagB      = "foo"
 		flagC uint = 7
+		flagD []string
 	)
 
 	err := config.Parse(
 		config.Required(config.Int(&flagA, "flag-a", "FLAG_A", "flag A", RangeValidator(1, 667))),
 		config.String(&flagB, "flag-b", "FLAG_B", ""),
 		CountTheDots(&flagC, "flag-c", "FLAG_C", "flag C"),
+		config.Repeat(&flagD, genString, "flag-d", "FLAG_D", "flag D"),
 	)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)
@@ -88,4 +96,5 @@ func main() {
 	fmt.Printf("flagA: %d\n", flagA)
 	fmt.Printf("flagB: %q\n", flagB)
 	fmt.Printf("flagC: %d\n", flagC)
+	fmt.Printf("flagD: %q\n", flagD)
 }
