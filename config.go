@@ -254,3 +254,16 @@ func Repeat(v interface{}, generator Generator, flag, env, usage string, validat
 		TypeHint: "repeatable",
 	}
 }
+
+func MakeGenerator(v flag.Value) Generator {
+	t := reflect.Indirect(reflect.ValueOf(v)).Type()
+	return func() flag.Value {
+		vv := reflect.New(t)
+		ret, ok := vv.Interface().(flag.Value)
+		if !ok {
+			panic(errors.Errorf("expected to be able to cast to flag.Value when generating for %s", t))
+		}
+
+		return ret
+	}
+}
