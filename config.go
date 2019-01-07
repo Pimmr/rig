@@ -207,6 +207,44 @@ func (vs sliceValue) String() string {
 }
 
 func (vs sliceValue) Set(s string) error {
+	ss := splitRepeatable(s)
+	for _, sub := range ss {
+		err := vs.set(sub)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func splitRepeatable(in string) []string {
+	var out []string
+	var current []rune
+	var escaping bool
+
+	for _, c := range in {
+		if escaping {
+			escaping = false
+			current = append(current, c)
+			continue
+		}
+		switch c {
+		default:
+			current = append(current, c)
+		case '\\':
+			escaping = true
+		case ',':
+			out = append(out, string(current))
+			current = []rune{}
+		}
+	}
+	out = append(out, string(current))
+
+	return out
+}
+
+func (vs sliceValue) set(s string) error {
 	if vs.value.Kind() != reflect.Ptr {
 		return errors.Errorf("expected pointer to slice, got %s instead", vs.value.Kind())
 	}
@@ -241,7 +279,7 @@ func (vs sliceValue) Set(s string) error {
 	return nil
 }
 
-func Repeat(v interface{}, generator Generator, flag, env, usage string, validators ...VarValidator) *Flag {
+func Repeatable(v interface{}, generator Generator, flag, env, usage string, validators ...VarValidator) *Flag {
 	return &Flag{
 		Value: sliceValue{
 			value:      reflect.ValueOf(v),
