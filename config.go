@@ -6,6 +6,8 @@ import (
 	"os"
 	"reflect"
 
+	"github.com/Pimmr/config/validators"
+
 	"github.com/pkg/errors"
 )
 
@@ -199,7 +201,7 @@ type Generator func() flag.Value
 type sliceValue struct {
 	value      reflect.Value
 	generator  Generator
-	validators []VarValidator
+	validators []validators.Var
 }
 
 func (vs sliceValue) String() string {
@@ -279,7 +281,7 @@ func (vs sliceValue) set(s string) error {
 	return nil
 }
 
-func Repeatable(v interface{}, generator Generator, flag, env, usage string, validators ...VarValidator) *Flag {
+func Repeatable(v interface{}, generator Generator, flag, env, usage string, validators ...validators.Var) *Flag {
 	return &Flag{
 		Value: sliceValue{
 			value:      reflect.ValueOf(v),

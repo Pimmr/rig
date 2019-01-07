@@ -3,13 +3,13 @@ package config
 import (
 	"flag"
 	"time"
-)
 
-type DurationValidator func(time.Duration) error
+	"github.com/Pimmr/config/validators"
+)
 
 type durationValidators struct {
 	*durationValue
-	validators []DurationValidator
+	validators []validators.Duration
 }
 
 func (v durationValidators) Set(s string) error {
@@ -40,7 +40,7 @@ func (d *durationValue) Set(s string) error {
 	return err
 }
 
-func Duration(v *time.Duration, flag, env, usage string, validators ...DurationValidator) *Flag {
+func Duration(v *time.Duration, flag, env, usage string, validators ...validators.Duration) *Flag {
 	return &Flag{
 		Value: durationValidators{
 			durationValue: (*durationValue)(v),

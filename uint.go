@@ -3,13 +3,13 @@ package config
 import (
 	"flag"
 	"strconv"
-)
 
-type UintValidator func(uint) error
+	"github.com/Pimmr/config/validators"
+)
 
 type uintValidators struct {
 	*uintValue
-	validators []UintValidator
+	validators []validators.Uint
 }
 
 func (v uintValidators) Set(s string) error {
@@ -40,7 +40,7 @@ func (i *uintValue) Set(s string) error {
 	return err
 }
 
-func Uint(v *uint, flag, env, usage string, validators ...UintValidator) *Flag {
+func Uint(v *uint, flag, env, usage string, validators ...validators.Uint) *Flag {
 	return &Flag{
 		Value: uintValidators{
 			uintValue:  (*uintValue)(v),

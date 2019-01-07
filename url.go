@@ -3,23 +3,23 @@ package config
 import (
 	"flag"
 	"net/url"
+
+	"github.com/Pimmr/config/validators"
 )
 
-type URLValidator func(*url.URL) error
-
 type urlValidators struct {
-	*urlValue
-	validators []URLValidator
+	*URLValue
+	validators []validators.URL
 }
 
 func (v urlValidators) Set(s string) error {
-	err := v.urlValue.Set(s)
+	err := v.URLValue.Set(s)
 	if err != nil {
 		return err
 	}
 
 	for _, validator := range v.validators {
-		err = validator(*v.urlValue.URL)
+		err = validator(*v.URLValue.URL)
 		if err != nil {
 			return err
 		}
@@ -28,11 +28,11 @@ func (v urlValidators) Set(s string) error {
 	return nil
 }
 
-type urlValue struct {
+type URLValue struct {
 	URL **url.URL
 }
 
-func (u urlValue) String() string {
+func (u URLValue) String() string {
 	if *u.URL == nil {
 		return ""
 	}
@@ -40,16 +40,16 @@ func (u urlValue) String() string {
 	return (*u.URL).String()
 }
 
-func (u *urlValue) Set(s string) error {
+func (u *URLValue) Set(s string) error {
 	v, err := url.Parse(s)
 	*u.URL = v
 	return err
 }
 
-func URL(v **url.URL, flag, env, usage string, validators ...URLValidator) *Flag {
+func URL(v **url.URL, flag, env, usage string, validators ...validators.URL) *Flag {
 	return &Flag{
 		Value: urlValidators{
-			urlValue: &urlValue{
+			URLValue: &URLValue{
 				URL: v,
 			},
 			validators: validators,
@@ -64,7 +64,7 @@ func URL(v **url.URL, flag, env, usage string, validators ...URLValidator) *Flag
 func URLGenerator() Generator {
 	// TODO(yazgazan): might not work, needs testing
 	return func() flag.Value {
-		return &urlValue{
+		return &URLValue{
 			URL: new(*url.URL),
 		}
 	}

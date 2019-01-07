@@ -3,23 +3,23 @@ package config
 import (
 	"flag"
 	"regexp"
+
+	"github.com/Pimmr/config/validators"
 )
 
-type RegexpValidator func(*regexp.Regexp) error
-
 type regexpValidators struct {
-	*regexpValue
-	validators []RegexpValidator
+	*RegexpValue
+	validators []validators.Regexp
 }
 
 func (v regexpValidators) Set(s string) error {
-	err := v.regexpValue.Set(s)
+	err := v.RegexpValue.Set(s)
 	if err != nil {
 		return err
 	}
 
 	for _, validator := range v.validators {
-		err = validator(*v.regexpValue.Regexp)
+		err = validator(*v.RegexpValue.Regexp)
 		if err != nil {
 			return err
 		}
@@ -28,28 +28,28 @@ func (v regexpValidators) Set(s string) error {
 	return nil
 }
 
-type regexpValue struct {
+type RegexpValue struct {
 	Regexp **regexp.Regexp
 }
 
-func (r regexpValue) String() string {
+func (r RegexpValue) String() string {
 	if *r.Regexp == nil {
 		return ""
 	}
 	return (*r.Regexp).String()
 }
 
-func (r *regexpValue) Set(s string) error {
+func (r *RegexpValue) Set(s string) error {
 	var err error
 
 	*r.Regexp, err = regexp.Compile(s)
 	return err
 }
 
-func Regexp(v **regexp.Regexp, flag, env, usage string, validators ...RegexpValidator) *Flag {
+func Regexp(v **regexp.Regexp, flag, env, usage string, validators ...validators.Regexp) *Flag {
 	return &Flag{
 		Value: regexpValidators{
-			regexpValue: &regexpValue{
+			RegexpValue: &RegexpValue{
 				Regexp: v,
 			},
 			validators: validators,
@@ -64,7 +64,7 @@ func Regexp(v **regexp.Regexp, flag, env, usage string, validators ...RegexpVali
 func RegexpGenerator() Generator {
 	// TODO(yazgazan): might not work, needs testing
 	return func() flag.Value {
-		return &regexpValue{
+		return &RegexpValue{
 			Regexp: new(*regexp.Regexp),
 		}
 	}

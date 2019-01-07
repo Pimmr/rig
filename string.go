@@ -2,13 +2,13 @@ package config
 
 import (
 	"flag"
-)
 
-type StringValidator func(string) error
+	"github.com/Pimmr/config/validators"
+)
 
 type stringValidators struct {
 	*stringValue
-	validators []StringValidator
+	validators []validators.String
 }
 
 func (v stringValidators) Set(s string) error {
@@ -38,7 +38,7 @@ func (s *stringValue) Set(val string) error {
 	return nil
 }
 
-func String(v *string, flag, env, usage string, validators ...StringValidator) *Flag {
+func String(v *string, flag, env, usage string, validators ...validators.String) *Flag {
 	return &Flag{
 		Value: stringValidators{
 			stringValue: (*stringValue)(v),

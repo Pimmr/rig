@@ -3,13 +3,13 @@ package config
 import (
 	"flag"
 	"strconv"
-)
 
-type Int64Validator func(int64) error
+	"github.com/Pimmr/config/validators"
+)
 
 type int64Validators struct {
 	*int64Value
-	validators []Int64Validator
+	validators []validators.Int64
 }
 
 func (v int64Validators) Set(s string) error {
@@ -40,7 +40,7 @@ func (i *int64Value) Set(s string) error {
 	return err
 }
 
-func Int64(v *int64, flag, env, usage string, validators ...Int64Validator) *Flag {
+func Int64(v *int64, flag, env, usage string, validators ...validators.Int64) *Flag {
 	return &Flag{
 		Value: int64Validators{
 			int64Value: (*int64Value)(v),

@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/Pimmr/config"
+	"github.com/Pimmr/config/validators"
 )
 
 type countTheDotsValue uint
@@ -44,7 +45,7 @@ func CountTheDots(v *uint, name, env, usage string) *config.Flag {
 	)
 }
 
-func RangeValidator(min, max int) config.IntValidator {
+func RangeValidator(min, max int) validators.Int {
 	return func(i int) error {
 		if i < min {
 			return fmt.Errorf("integer should be greater than %d", min)
@@ -57,7 +58,7 @@ func RangeValidator(min, max int) config.IntValidator {
 	}
 }
 
-func VarToIntValidator(validator config.IntValidator) config.VarValidator {
+func VarToIntValidator(validator validators.Int) validators.Var {
 	return func(v flag.Value) error {
 		i, ok := v.(*countTheDotsValue)
 		if !ok {

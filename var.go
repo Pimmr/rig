@@ -1,12 +1,14 @@
 package config
 
-import "flag"
+import (
+	"flag"
 
-type VarValidator func(flag.Value) error
+	"github.com/Pimmr/config/validators"
+)
 
 type varValidators struct {
 	flag.Value
-	validators []VarValidator
+	validators []validators.Var
 }
 
 func (v varValidators) Set(s string) error {
@@ -25,7 +27,7 @@ func (v varValidators) Set(s string) error {
 	return nil
 }
 
-func Var(v flag.Value, flag, env, usage string, validators ...VarValidator) *Flag {
+func Var(v flag.Value, flag, env, usage string, validators ...validators.Var) *Flag {
 	return &Flag{
 		Value: varValidators{
 			Value:      v,
