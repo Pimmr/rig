@@ -80,7 +80,7 @@ func main() {
 		config.Required(config.Int(&flagA, "flag-a", "FLAG_A", "flag A", RangeValidator(1, 667))),
 		config.String(&flagB, "flag-b", "FLAG_B", ""),
 		CountTheDots(&flagC, "flag-c", "FLAG_C", "flag C"),
-		config.Repeatable(&flagD, config.MakeGenerator(new(config.StringValue)), "flag-d", "FLAG_D", "flag D"),
+		config.Repeatable(&flagD, config.StringGenerator(), "flag-d", "FLAG_D", "flag D"),
 	)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)

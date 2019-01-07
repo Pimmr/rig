@@ -1,6 +1,9 @@
 package config
 
-import "strconv"
+import (
+	"flag"
+	"strconv"
+)
 
 type Float64Validator func(float64) error
 
@@ -47,5 +50,11 @@ func Float64(v *float64, flag, env, usage string, validators ...Float64Validator
 		Env:      env,
 		Usage:    usage,
 		TypeHint: "float",
+	}
+}
+
+func Float64Generator() Generator {
+	return func() flag.Value {
+		return new(float64Value)
 	}
 }

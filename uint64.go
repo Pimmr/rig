@@ -1,6 +1,9 @@
 package config
 
-import "strconv"
+import (
+	"flag"
+	"strconv"
+)
 
 type Uint64Validator func(uint64) error
 
@@ -47,5 +50,11 @@ func Uint64(v *uint64, flag, env, usage string, validators ...Uint64Validator) *
 		Env:      env,
 		Usage:    usage,
 		TypeHint: "unsigned 64 bit integer",
+	}
+}
+
+func Uint64Generator() Generator {
+	return func() flag.Value {
+		return new(uint64Value)
 	}
 }

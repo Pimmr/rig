@@ -1,6 +1,9 @@
 package config
 
-import "strconv"
+import (
+	"flag"
+	"strconv"
+)
 
 type boolValue bool
 
@@ -21,5 +24,11 @@ func Bool(v *bool, flag, env, usage string) *Flag {
 		Env:      env,
 		Usage:    usage,
 		TypeHint: "boolean",
+	}
+}
+
+func BoolGenerator() Generator {
+	return func() flag.Value {
+		return new(boolValue)
 	}
 }

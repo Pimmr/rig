@@ -1,6 +1,9 @@
 package config
 
-import "strconv"
+import (
+	"flag"
+	"strconv"
+)
 
 type UintValidator func(uint) error
 
@@ -47,5 +50,11 @@ func Uint(v *uint, flag, env, usage string, validators ...UintValidator) *Flag {
 		Env:      env,
 		Usage:    usage,
 		TypeHint: "unsigned integer",
+	}
+}
+
+func UintGenerator() Generator {
+	return func() flag.Value {
+		return new(uintValue)
 	}
 }

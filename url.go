@@ -1,6 +1,9 @@
 package config
 
-import "net/url"
+import (
+	"flag"
+	"net/url"
+)
 
 type URLValidator func(*url.URL) error
 
@@ -55,5 +58,14 @@ func URL(v **url.URL, flag, env, usage string, validators ...URLValidator) *Flag
 		Env:      env,
 		Usage:    usage,
 		TypeHint: "URL",
+	}
+}
+
+func URLGenerator() Generator {
+	// TODO(yazgazan): might not work, needs testing
+	return func() flag.Value {
+		return &urlValue{
+			URL: new(*url.URL),
+		}
 	}
 }

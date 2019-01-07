@@ -1,6 +1,9 @@
 package config
 
-import "strconv"
+import (
+	"flag"
+	"strconv"
+)
 
 type IntValidator func(int) error
 
@@ -47,5 +50,11 @@ func Int(v *int, flag, env, usage string, validators ...IntValidator) *Flag {
 		Env:      env,
 		Usage:    usage,
 		TypeHint: "integer",
+	}
+}
+
+func IntGenerator() Generator {
+	return func() flag.Value {
+		return new(intValue)
 	}
 }

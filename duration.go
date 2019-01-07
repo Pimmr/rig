@@ -1,6 +1,9 @@
 package config
 
-import "time"
+import (
+	"flag"
+	"time"
+)
 
 type DurationValidator func(time.Duration) error
 
@@ -47,5 +50,11 @@ func Duration(v *time.Duration, flag, env, usage string, validators ...DurationV
 		Env:      env,
 		Usage:    usage,
 		TypeHint: "duration",
+	}
+}
+
+func DurationGenerator() Generator {
+	return func() flag.Value {
+		return new(durationValue)
 	}
 }

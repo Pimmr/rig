@@ -1,6 +1,9 @@
 package config
 
-import "regexp"
+import (
+	"flag"
+	"regexp"
+)
 
 type RegexpValidator func(*regexp.Regexp) error
 
@@ -55,5 +58,14 @@ func Regexp(v **regexp.Regexp, flag, env, usage string, validators ...RegexpVali
 		Env:      env,
 		Usage:    usage,
 		TypeHint: "Regexp",
+	}
+}
+
+func RegexpGenerator() Generator {
+	// TODO(yazgazan): might not work, needs testing
+	return func() flag.Value {
+		return &regexpValue{
+			Regexp: new(*regexp.Regexp),
+		}
 	}
 }

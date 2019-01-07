@@ -294,6 +294,7 @@ func Repeatable(v interface{}, generator Generator, flag, env, usage string, val
 }
 
 func MakeGenerator(v flag.Value) Generator {
+	// TODO(yazgazan): This function will necessitate great examples
 	t := reflect.Indirect(reflect.ValueOf(v)).Type()
 	return func() flag.Value {
 		vv := reflect.New(t)
