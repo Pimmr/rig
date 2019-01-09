@@ -1,4 +1,6 @@
 simple
+example-repeatable
+example-validators
 
 !/examples/**
 
