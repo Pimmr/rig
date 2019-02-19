@@ -22,6 +22,10 @@ type Flag struct {
 	set bool
 }
 
+type isBoolFlagger interface {
+	IsBoolFlag() bool
+}
+
 func (f *Flag) Set(v string) error {
 	err := f.Value.Set(v)
 	if err != nil {
@@ -30,6 +34,14 @@ func (f *Flag) Set(v string) error {
 
 	f.set = true
 	return nil
+}
+
+func (f *Flag) IsBoolFlag() bool {
+	if boolFlagger, ok := f.Value.(isBoolFlagger); ok {
+		return boolFlagger.IsBoolFlag()
+	}
+
+	return false
 }
 
 func (f Flag) missingError() error {

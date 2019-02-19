@@ -17,6 +17,10 @@ func (b *boolValue) Set(s string) error {
 	return err
 }
 
+func (b *boolValue) IsBoolFlag() bool {
+	return true
+}
+
 func Bool(v *bool, flag, env, usage string) *Flag {
 	return &Flag{
 		Value:    (*boolValue)(v),

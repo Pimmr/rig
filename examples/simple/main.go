@@ -75,6 +75,7 @@ func main() {
 		flagB      = "foo"
 		flagC uint = 7
 		flagD []string
+		flagE bool
 	)
 
 	err := config.Parse(
@@ -82,6 +83,7 @@ func main() {
 		config.String(&flagB, "flag-b", "FLAG_B", ""),
 		CountTheDots(&flagC, "flag-c", "FLAG_C", "flag C"),
 		config.Repeatable(&flagD, config.StringGenerator(), "flag-d", "FLAG_D", "flag D"),
+		config.Bool(&flagE, "flag-e", "FLAG_E", "flag E"),
 	)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)
@@ -92,4 +94,5 @@ func main() {
 	fmt.Printf("flagB: %q\n", flagB)
 	fmt.Printf("flagC: %d\n", flagC)
 	fmt.Printf("flagD: %q\n", flagD)
+	fmt.Printf("flagE: %v\n", flagE)
 }
