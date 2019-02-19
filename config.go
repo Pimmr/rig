@@ -19,7 +19,8 @@ type Flag struct {
 	Required bool
 	TypeHint string
 
-	set bool
+	set          bool
+	defaultValue string
 }
 
 type isBoolFlagger interface {
@@ -75,6 +76,7 @@ func (c *Config) Parse(arguments []string) error {
 	c.FlagSet.Usage = c.Usage
 
 	for _, f := range c.Flags {
+		f.defaultValue = f.Value.String()
 		if f.Name == "" {
 			continue
 		}
@@ -165,15 +167,14 @@ func (c *Config) Usage() {
 		}
 
 		_, _ = fmt.Fprint(c.FlagSet.Output(), "\n")
-		defaultValue := f.Value.String()
 		if f.Usage != "" {
 			_, _ = fmt.Fprintf(c.FlagSet.Output(), "        %s", f.Usage)
-			if defaultValue != "" && !f.Required {
-				_, _ = fmt.Fprintf(c.FlagSet.Output(), " (default %q)", defaultValue)
+			if f.defaultValue != "" && !f.Required {
+				_, _ = fmt.Fprintf(c.FlagSet.Output(), " (default %q)", f.defaultValue)
 			}
 			_, _ = fmt.Fprint(c.FlagSet.Output(), "\n")
-		} else if defaultValue != "" && !f.Required {
-			_, _ = fmt.Fprintf(c.FlagSet.Output(), "        (default %q)\n", defaultValue)
+		} else if f.defaultValue != "" && !f.Required {
+			_, _ = fmt.Fprintf(c.FlagSet.Output(), "        (default %q)\n", f.defaultValue)
 		}
 	}
 }
