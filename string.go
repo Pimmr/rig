@@ -12,13 +12,10 @@ type stringValidators struct {
 }
 
 func (v stringValidators) Set(s string) error {
-	err := v.stringValue.Set(s)
-	if err != nil {
-		return err
-	}
+	_ = v.stringValue.Set(s) // stringValue.Set cannot return an error
 
 	for _, validator := range v.validators {
-		err = validator(string(*v.stringValue))
+		err := validator(string(*v.stringValue))
 		if err != nil {
 			return err
 		}
