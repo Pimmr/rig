@@ -93,8 +93,6 @@ func TestFloat64(t *testing.T) {
 	if f.IsBoolFlag() {
 		t.Error("Bool().IsBoolFlag() = true, expected false")
 	}
-
-	// TODO(yazgazan): test validators
 }
 
 func TestFloat64Validators(t *testing.T) {
