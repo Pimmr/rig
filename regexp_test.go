@@ -157,7 +157,18 @@ func TestRegexpValidators(t *testing.T) {
 func TestRegexpGenerator(t *testing.T) {
 	g := RegexpGenerator()
 	d := g()
-	if _, ok := d.(*RegexpValue); !ok {
+	r, ok := d.(*RegexpValue)
+	if !ok {
 		t.Errorf("RegexpGenerator(): expected type *RegexpValue, got %T instead", d)
+	}
+
+	in := "[a-d]+"
+	err := d.Set(in)
+	if err != nil {
+		t.Errorf("RegexpGenerator()().Set(%q): unexpected error: %s", in, err)
+		t.FailNow()
+	}
+	if (*r.Regexp).String() != in {
+		t.Errorf("RegexpGenerator()().Set(%q) = %q, expected %q", in, (*r.Regexp).String(), in)
 	}
 }

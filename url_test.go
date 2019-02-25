@@ -167,7 +167,18 @@ func TestURLValidators(t *testing.T) {
 func TestURLGenerator(t *testing.T) {
 	g := URLGenerator()
 	d := g()
-	if _, ok := d.(*URLValue); !ok {
+	u, ok := d.(*URLValue)
+	if !ok {
 		t.Errorf("URLGenerator(): expected type *URLValue, got %T instead", d)
+	}
+
+	in := "http://example.com"
+	err := d.Set(in)
+	if err != nil {
+		t.Errorf("URLGenerator()().Set(%q): unexpected error: %s", in, err)
+		t.FailNow()
+	}
+	if (*u.URL).String() != in {
+		t.Errorf("URLGenerator()().Set(%q) = %q, expected %q", in, (*u.URL).String(), in)
 	}
 }

@@ -62,7 +62,6 @@ func Regexp(v **regexp.Regexp, flag, env, usage string, validators ...validators
 }
 
 func RegexpGenerator() Generator {
-	// TODO(yazgazan): might not work, needs testing
 	return func() flag.Value {
 		return &RegexpValue{
 			Regexp: new(*regexp.Regexp),

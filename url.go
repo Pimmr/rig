@@ -62,7 +62,6 @@ func URL(v **url.URL, flag, env, usage string, validators ...validators.URL) *Fl
 }
 
 func URLGenerator() Generator {
-	// TODO(yazgazan): might not work, needs testing
 	return func() flag.Value {
 		return &URLValue{
 			URL: new(*url.URL),
