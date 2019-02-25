@@ -91,7 +91,7 @@ func TestUint64(t *testing.T) {
 	}
 
 	if f.IsBoolFlag() {
-		t.Error("Bool().IsBoolFlag() = true, expected false")
+		t.Error("Uint64().IsBoolFlag() = true, expected false")
 	}
 }
 

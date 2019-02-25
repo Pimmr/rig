@@ -91,7 +91,7 @@ func TestUint(t *testing.T) {
 	}
 
 	if f.IsBoolFlag() {
-		t.Error("Bool().IsBoolFlag() = true, expected false")
+		t.Error("Uint().IsBoolFlag() = true, expected false")
 	}
 }
 

@@ -91,7 +91,7 @@ func TestFloat64(t *testing.T) {
 	}
 
 	if f.IsBoolFlag() {
-		t.Error("Bool().IsBoolFlag() = true, expected false")
+		t.Error("Float64().IsBoolFlag() = true, expected false")
 	}
 }
 

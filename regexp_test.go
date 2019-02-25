@@ -94,7 +94,7 @@ func TestRegexp(t *testing.T) {
 	}
 
 	if f.IsBoolFlag() {
-		t.Error("Bool().IsBoolFlag() = true, expected false")
+		t.Error("Regexp().IsBoolFlag() = true, expected false")
 	}
 }
 

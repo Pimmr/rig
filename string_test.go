@@ -73,7 +73,7 @@ func TestString(t *testing.T) {
 	}
 
 	if f.IsBoolFlag() {
-		t.Error("Bool().IsBoolFlag() = true, expected false")
+		t.Error("String().IsBoolFlag() = true, expected false")
 	}
 }
 
