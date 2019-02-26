@@ -50,6 +50,43 @@ func TestFlagMissingError(t *testing.T) {
 	}
 }
 
+func TestConfigSetDefaultValues(t *testing.T) {
+	var (
+		s1 = "foo"
+		s2 = "bar"
+	)
+
+	c := &Config{
+		FlagSet: flag.NewFlagSet("flagset", flag.ContinueOnError),
+		Flags: []*Flag{
+			String(&s1, "string-1", "STRING_1", ""),
+			String(&s2, "string-2", "STRING_2", ""),
+		},
+	}
+
+	for _, f := range c.Flags {
+		if f.defaultValue != "" {
+			t.Errorf("defaultValue should not have been set for flag %q yet", f.Name)
+		}
+	}
+	c.setDefaultValues()
+	expected := []string{"foo", "bar"}
+	for i, f := range c.Flags {
+		if f.defaultValue != expected[i] {
+			t.Errorf("flag %q has .defaultValue = %q, expected %q", f.Name, f.defaultValue, expected[i])
+		}
+	}
+
+	s1 = "baz"
+	s2 = "fuzz"
+	c.setDefaultValues()
+	for i, f := range c.Flags {
+		if f.defaultValue != expected[i] {
+			t.Errorf("flag %q has .defaultValue = %q, expected %q (defaultValue shouldn't have been re-set)", f.Name, f.defaultValue, expected[i])
+		}
+	}
+}
+
 func TestConfigArgArgs(t *testing.T) {
 	var s string
 
