@@ -2,7 +2,9 @@ package config
 
 import (
 	"flag"
+	"fmt"
 	"reflect"
+	"strings"
 
 	"github.com/Pimmr/config/validators"
 	"github.com/pkg/errors"
@@ -17,7 +19,18 @@ type sliceValue struct {
 }
 
 func (vs sliceValue) String() string {
-	return "[...]"
+	if vs.value.CanInterface() {
+		stringer, ok := vs.value.Interface().(fmt.Stringer)
+		if ok {
+			return stringer.String()
+		}
+	}
+
+	ss := make([]string, vs.value.Len())
+	for i := 0; i < vs.value.Len(); i++ {
+		ss[i] = fmt.Sprint(vs.value.Index(i))
+	}
+	return "[" + strings.Join(ss, ",") + "]"
 }
 
 func (vs sliceValue) Set(s string) error {

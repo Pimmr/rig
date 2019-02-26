@@ -4,11 +4,52 @@ import (
 	"flag"
 	"reflect"
 	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/Pimmr/config/validators"
 	"github.com/pkg/errors"
 )
+
+type stringeringString string
+
+func (s stringeringString) String() string {
+	return "s:" + string(s)
+}
+
+type stringeringStringSlice []string
+
+func (ss stringeringStringSlice) String() string {
+	return strings.Join([]string(ss), ",")
+}
+
+func TestSliceValueString(t *testing.T) {
+	for _, test := range []struct {
+		value    interface{}
+		expected string
+	}{
+		{
+			value:    []string{"foo", "bar"},
+			expected: "[foo,bar]",
+		},
+		{
+			value:    []stringeringString{"foo", "bar"},
+			expected: "[s:foo,s:bar]",
+		},
+		{
+			value:    stringeringStringSlice{"foo", "bar"},
+			expected: "foo,bar",
+		},
+	} {
+		got := sliceValue{
+			value: reflect.ValueOf(test.value),
+		}.String()
+
+		if got != test.expected {
+			t.Errorf("sliceValue{%#v}.String() = %q, expected %q", test.value, got, test.expected)
+		}
+	}
+}
 
 func TestRepeatable(t *testing.T) {
 	t.Run("int", func(t *testing.T) {
