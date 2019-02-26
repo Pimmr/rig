@@ -50,6 +50,247 @@ func TestConfigSetDefaultValues(t *testing.T) {
 	}
 }
 
+func TestConfigParse(t *testing.T) {
+	t.Run("no args", func(t *testing.T) {
+		c := &Config{
+			FlagSet: flag.NewFlagSet("flagset", flag.ContinueOnError),
+			Flags:   []*Flag{},
+		}
+		buf := &bytes.Buffer{}
+		c.FlagSet.SetOutput(buf)
+
+		os.Clearenv()
+		err := c.Parse([]string{})
+		if err != nil {
+			t.Errorf("Config.Parse([]): unexpected error: %s", err)
+		}
+	})
+
+	t.Run("valid inputs from args", func(t *testing.T) {
+		var (
+			s string
+			i int
+		)
+		c := &Config{
+			FlagSet: flag.NewFlagSet("flagset", flag.ContinueOnError),
+			Flags: []*Flag{
+				String(&s, "string-flag", "STRING_ENV", ""),
+				Int(&i, "int-flag", "INT_ENV", ""),
+			},
+		}
+		buf := &bytes.Buffer{}
+		c.FlagSet.SetOutput(buf)
+
+		os.Clearenv()
+		err := c.Parse([]string{"-string-flag=foo", "-int-flag=42"})
+		if err != nil {
+			t.Errorf("Config.Parse(...): unexpected error: %s", err)
+		}
+
+		expectedString := "foo"
+		if s != expectedString {
+			t.Errorf("-string-flag: got %q, expected %q", s, expectedString)
+		}
+
+		expectedInt := 42
+		if i != expectedInt {
+			t.Errorf("-int-flag: got %d, expected %d", i, expectedInt)
+		}
+	})
+
+	t.Run("valid inputs from env", func(t *testing.T) {
+		var (
+			s string
+			i int
+		)
+		c := &Config{
+			FlagSet: flag.NewFlagSet("flagset", flag.ContinueOnError),
+			Flags: []*Flag{
+				String(&s, "string-flag", "STRING_ENV", ""),
+				Int(&i, "int-flag", "INT_ENV", ""),
+			},
+		}
+		buf := &bytes.Buffer{}
+		c.FlagSet.SetOutput(buf)
+
+		os.Clearenv()
+		os.Setenv("STRING_ENV", "foo")
+		os.Setenv("INT_ENV", "42")
+		err := c.Parse([]string{})
+		if err != nil {
+			t.Errorf("Config.Parse([]): unexpected error: %s", err)
+		}
+
+		expectedString := "foo"
+		if s != expectedString {
+			t.Errorf("STRING_ENV: got %q, expected %q", s, expectedString)
+		}
+
+		expectedInt := 42
+		if i != expectedInt {
+			t.Errorf("INT_ENV: got %d, expected %d", i, expectedInt)
+		}
+	})
+
+	t.Run("invalid inputs from args", func(t *testing.T) {
+		var (
+			s string
+			i int
+		)
+		c := &Config{
+			FlagSet: flag.NewFlagSet("flagset", flag.ContinueOnError),
+			Flags: []*Flag{
+				String(&s, "string-flag", "STRING_ENV", ""),
+				Int(&i, "int-flag", "INT_ENV", ""),
+			},
+		}
+		buf := &bytes.Buffer{}
+		c.FlagSet.SetOutput(buf)
+
+		os.Clearenv()
+		err := c.Parse([]string{"-string-flag=foo", "-int-flag=bar"})
+		if err == nil {
+			t.Errorf("Config.Parse(invalidInput): expected error, got nil")
+		}
+	})
+
+	t.Run("invalid inputs from env", func(t *testing.T) {
+		var (
+			s string
+			i int
+		)
+		c := &Config{
+			FlagSet: flag.NewFlagSet("flagset", flag.ContinueOnError),
+			Flags: []*Flag{
+				String(&s, "string-flag", "STRING_ENV", ""),
+				Int(&i, "int-flag", "INT_ENV", ""),
+			},
+		}
+		buf := &bytes.Buffer{}
+		c.FlagSet.SetOutput(buf)
+
+		os.Clearenv()
+		os.Setenv("STRING_ENV", "foo")
+		os.Setenv("INT_ENV", "bar")
+		err := c.Parse([]string{})
+		if err == nil {
+			t.Errorf("Config.Parse([]): expected error, got nil")
+		}
+	})
+
+	t.Run("no input, no required", func(t *testing.T) {
+		var (
+			s = "foo"
+			i = 42
+		)
+		c := &Config{
+			FlagSet: flag.NewFlagSet("flagset", flag.ContinueOnError),
+			Flags: []*Flag{
+				String(&s, "string-flag", "STRING_ENV", ""),
+				Int(&i, "int-flag", "INT_ENV", ""),
+			},
+		}
+		buf := &bytes.Buffer{}
+		c.FlagSet.SetOutput(buf)
+
+		os.Clearenv()
+		err := c.Parse([]string{})
+		if err != nil {
+			t.Errorf("Config.Parse([]): unexpected error: %s", err)
+		}
+
+		expectedString := "foo"
+		if s != expectedString {
+			t.Errorf("STRING_ENV: got %q, expected %q", s, expectedString)
+		}
+
+		expectedInt := 42
+		if i != expectedInt {
+			t.Errorf("INT_ENV: got %d, expected %d", i, expectedInt)
+		}
+	})
+
+	t.Run("no input, required", func(t *testing.T) {
+		var (
+			s string
+			i int
+		)
+		c := &Config{
+			FlagSet: flag.NewFlagSet("flagset", flag.ContinueOnError),
+			Flags: []*Flag{
+				Required(String(&s, "string-flag", "STRING_ENV", "")),
+				Required(Int(&i, "int-flag", "INT_ENV", "")),
+			},
+		}
+		buf := &bytes.Buffer{}
+		c.FlagSet.SetOutput(buf)
+
+		os.Clearenv()
+		err := c.Parse([]string{})
+		if err == nil {
+			t.Errorf("Config.Parse([]): expected error, got nil")
+		}
+	})
+
+	t.Run("valid inputs from env, no flags", func(t *testing.T) {
+		var (
+			s string
+			i int
+		)
+		c := &Config{
+			FlagSet: flag.NewFlagSet("flagset", flag.ContinueOnError),
+			Flags: []*Flag{
+				String(&s, "", "STRING_ENV", ""),
+				Int(&i, "", "INT_ENV", ""),
+			},
+		}
+		buf := &bytes.Buffer{}
+		c.FlagSet.SetOutput(buf)
+
+		os.Clearenv()
+		os.Setenv("STRING_ENV", "foo")
+		os.Setenv("INT_ENV", "42")
+		err := c.Parse([]string{})
+		if err != nil {
+			t.Errorf("Config.Parse([]): unexpected error: %s", err)
+		}
+
+		expectedString := "foo"
+		if s != expectedString {
+			t.Errorf("STRING_ENV: got %q, expected %q", s, expectedString)
+		}
+
+		expectedInt := 42
+		if i != expectedInt {
+			t.Errorf("INT_ENV: got %d, expected %d", i, expectedInt)
+		}
+	})
+
+	t.Run("invalid inputs from env, no flags", func(t *testing.T) {
+		var (
+			s string
+			i int
+		)
+		c := &Config{
+			FlagSet: flag.NewFlagSet("flagset", flag.ContinueOnError),
+			Flags: []*Flag{
+				String(&s, "", "STRING_ENV", ""),
+				Int(&i, "", "INT_ENV", ""),
+			},
+		}
+		buf := &bytes.Buffer{}
+		c.FlagSet.SetOutput(buf)
+
+		os.Clearenv()
+		os.Setenv("STRING_ENV", "foo")
+		os.Setenv("INT_ENV", "bar")
+		err := c.Parse([]string{})
+		if err == nil {
+			t.Errorf("Config.Parse([]): expected error, got nil")
+		}
+	})
+}
+
 func TestConfigArgArgs(t *testing.T) {
 	var s string
 

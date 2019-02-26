@@ -43,6 +43,9 @@ func (c *Config) Parse(arguments []string) error {
 
 	c.setDefaultValues()
 	for _, f := range c.Flags {
+		if f.Name == "" {
+			continue
+		}
 		c.FlagSet.Var(f, f.Name, f.Usage)
 	}
 
