@@ -74,18 +74,17 @@ func (c *Config) Parse(arguments []string) error {
 		}
 	}
 
-	hasErrors := false
+	hasMissing := false
 	for _, f := range c.Flags {
 		if !f.Required || f.set {
 			continue
 		}
 
 		_, _ = fmt.Fprintln(c.FlagSet.Output(), f.missingError())
-		hasErrors = true
+		hasMissing = true
 	}
-	if hasErrors {
-		c.Usage()
-		os.Exit(2)
+	if hasMissing {
+		return c.handleError(errors.New("missing required values"))
 	}
 
 	return nil
