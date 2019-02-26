@@ -46,15 +46,16 @@ func (f *Flag) IsBoolFlag() bool {
 }
 
 func (f Flag) missingError() error {
-	if f.Name != "" && f.Env != "" {
+	switch {
+	default:
+		return errors.New("configuration variable doesn't have a flag or environment variable specified")
+	case f.Name != "" && f.Env != "":
 		return errors.Errorf("missing command line flag -%s or environment variable %s", f.Name, f.Env)
-	}
-
-	if f.Name != "" {
+	case f.Name != "":
 		return errors.Errorf("missing command line flag -%s", f.Name)
+	case f.Env != "":
+		return errors.Errorf("missing environment variable %s", f.Env)
 	}
-
-	return errors.Errorf("missing environment variable %s", f.Env)
 }
 
 func Parse(flags ...*Flag) error {
