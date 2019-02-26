@@ -50,6 +50,50 @@ func TestFlagMissingError(t *testing.T) {
 	}
 }
 
+func TestConfigArgArgs(t *testing.T) {
+	var s string
+
+	c := &Config{
+		FlagSet: flag.NewFlagSet("flagset", flag.ContinueOnError),
+		Flags: []*Flag{
+			String(&s, "string-flag", "STRING_ENV", ""),
+		},
+	}
+
+	const (
+		flagArg = "-string-flag=foo"
+		arg1    = "arg1"
+		arg2    = "arg2"
+		arg3    = "arg3"
+	)
+	args := []string{flagArg, arg1, arg2, arg3}
+	err := c.Parse(args)
+	if err != nil {
+		t.Errorf("Config.Parse(%q): unexpected error: %s", args, err)
+		t.FailNow()
+	}
+
+	expected := "foo"
+	if s != expected {
+		t.Errorf("Config.Parse(%q): string-flag should have been set to %q, got %q instead", args, expected, s)
+	}
+
+	if c.Arg(0) != arg1 {
+		t.Errorf("Config.Arg(0) = %q, expected %q", c.Arg(0), arg1)
+	}
+	if c.Arg(1) != arg2 {
+		t.Errorf("Config.Arg(1) = %q, expected %q", c.Arg(1), arg2)
+	}
+	if c.Arg(2) != arg3 {
+		t.Errorf("Config.Arg(2) = %q, expected %q", c.Arg(2), arg3)
+	}
+
+	expectedArgs := []string{arg1, arg2, arg3}
+	if !reflect.DeepEqual(c.Args(), expectedArgs) {
+		t.Errorf("Config.Args() = %q, expected %q", c.Args(), expectedArgs)
+	}
+}
+
 func TestConfigUsage(t *testing.T) {
 	const (
 		stringFlag    = "string-flag"
