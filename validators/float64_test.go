@@ -46,7 +46,7 @@ func TestFloat64Range(t *testing.T) {
 			t.Errorf("Float64Range(%f, %f)(%f): expected error, got nil", test.min, test.max, test.value)
 		}
 		if !test.expectError && err != nil {
-			t.Errorf("Float64Range(%f, %f)(%f): unexpected error: %f", test.min, test.max, test.value, err)
+			t.Errorf("Float64Range(%f, %f)(%f): unexpected error: %s", test.min, test.max, test.value, err)
 		}
 	}
 }
@@ -78,7 +78,7 @@ func TestFloat64Min(t *testing.T) {
 			t.Errorf("Float64Min(%f)(%f): expected error, got nil", test.min, test.value)
 		}
 		if !test.expectError && err != nil {
-			t.Errorf("Float64Min(%f)(%f): unexpected error: %f", test.min, test.value, err)
+			t.Errorf("Float64Min(%f)(%f): unexpected error: %s", test.min, test.value, err)
 		}
 	}
 }
@@ -110,7 +110,7 @@ func TestFloat64Max(t *testing.T) {
 			t.Errorf("Float64Max(%f)(%f): expected error, got nil", test.max, test.value)
 		}
 		if !test.expectError && err != nil {
-			t.Errorf("Float64Max(%f)(%f): unexpected error: %f", test.max, test.value, err)
+			t.Errorf("Float64Max(%f)(%f): unexpected error: %s", test.max, test.value, err)
 		}
 	}
 }
