@@ -13,6 +13,37 @@ import (
 	"github.com/pkg/errors"
 )
 
+func TestParse(t *testing.T) {
+	var (
+		s string
+		i int
+	)
+
+	// Parse uses os.Args, so we need to copy `go test`'s flags to avoid errors on -test.* args
+	flags := []*Flag{}
+	flag.CommandLine.VisitAll(func(f *flag.Flag) {
+		flags = append(flags, Var(MakeGenerator(f.Value)(), f.Name, "", ""))
+	})
+
+	flags = append(flags, String(&s, "string-flag", "STRING_ENV", ""))
+	flags = append(flags, Int(&i, "int-flag", "INT_ENV", ""))
+
+	os.Clearenv()
+	os.Setenv("STRING_ENV", "foo")
+	os.Setenv("INT_ENV", "42")
+	err := Parse(flags...)
+	if err != nil {
+		t.Errorf("Parse(...): unexpected error: %s", err)
+	}
+
+	if s != "foo" {
+		t.Errorf("Parse(...): STRING_ENV = %q, expected %q", s, "foo")
+	}
+	if i != 42 {
+		t.Errorf("Parse(...): INT_ENV = %d, expected %d", i, 42)
+	}
+}
+
 func TestConfigSetDefaultValues(t *testing.T) {
 	var (
 		s1 = "foo"
