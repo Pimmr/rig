@@ -70,17 +70,29 @@ func Parse(flags ...*Flag) error {
 type Config struct {
 	FlagSet *flag.FlagSet
 
-	Flags []*Flag
+	Flags            []*Flag
+	defaultValuesSet bool
 }
 
-func (c *Config) Parse(arguments []string) error {
-	c.FlagSet.Usage = c.Usage
+func (c *Config) setDefaultValues() {
+	if c.defaultValuesSet {
+		return
+	}
 
 	for _, f := range c.Flags {
 		f.defaultValue = f.Value.String()
 		if f.Name == "" {
 			continue
 		}
+	}
+	c.defaultValuesSet = true
+}
+
+func (c *Config) Parse(arguments []string) error {
+	c.FlagSet.Usage = c.Usage
+
+	c.setDefaultValues()
+	for _, f := range c.Flags {
 		c.FlagSet.Var(f, f.Name, f.Usage)
 	}
 
@@ -150,9 +162,11 @@ func (c *Config) handleError(err error) error {
 }
 
 func (c *Config) Usage() {
+	c.setDefaultValues()
+
 	_, _ = fmt.Fprintf(c.FlagSet.Output(), "Usage of %s:\n", os.Args[0])
 	for _, f := range c.Flags {
-		if f.Name == "" || f.Env == "" {
+		if f.Name == "" && f.Env == "" {
 			continue
 		}
 

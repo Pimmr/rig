@@ -1,6 +1,7 @@
 package config
 
 import (
+	"bytes"
 	"flag"
 	"reflect"
 	"regexp"
@@ -45,6 +46,58 @@ func TestFlagMissingError(t *testing.T) {
 			if !strings.Contains(errStr, s) {
 				t.Errorf("Flag(%+v).missingError() = %q: expected to find %q in error string.", test.flag, errStr, s)
 			}
+		}
+	}
+}
+
+func TestConfigUsage(t *testing.T) {
+	const (
+		stringFlag    = "string-flag"
+		stringDefault = "string default"
+		intEnv        = "INT_ENV"
+		intUsage      = "int usage"
+		intDefault    = "32"
+		boolFlag      = "bool-flag"
+		boolEnv       = "BOOL_ENV"
+		boolUsage     = "bool usage"
+		boolDefault   = "false"
+	)
+
+	var (
+		s = stringDefault
+		i = 32
+		b bool
+		f float64
+	)
+
+	c := &Config{
+		FlagSet: flag.NewFlagSet("flagset", flag.ContinueOnError),
+		Flags: []*Flag{
+			String(&s, stringFlag, "", ""),
+			Int(&i, "", intEnv, intUsage),
+			Bool(&b, boolFlag, boolEnv, boolUsage),
+			Float64(&f, "", "", "no flag or env set for this one"),
+		},
+	}
+	buf := &bytes.Buffer{}
+	c.FlagSet.SetOutput(buf)
+
+	c.Usage()
+
+	if buf.Len() == 0 {
+		t.Errorf("Config.Usage(): expected usage to be written to the flagset's output")
+	}
+
+	expected := []string{
+		stringFlag, stringDefault,
+		intEnv, intUsage, intDefault,
+		boolFlag, boolEnv, boolUsage, boolDefault,
+	}
+
+	bufStr := buf.String()
+	for _, s := range expected {
+		if !strings.Contains(bufStr, s) {
+			t.Errorf("c.Usage() output: expected to find %q", s)
 		}
 	}
 }
