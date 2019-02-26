@@ -235,17 +235,6 @@ func TestConfigUsage(t *testing.T) {
 		}
 	}
 }
-func TestTypeHint(t *testing.T) {
-	var s string
-
-	f := String(&s, "string-flag", "STRING_ENV", "testing TypeHint on String")
-	typeHint := "type hint"
-	h := TypeHint(f, typeHint)
-
-	if h.TypeHint != typeHint {
-		t.Errorf("TypeHint(String(...)).TypeHint = %q, expected %q", h.TypeHint, typeHint)
-	}
-}
 
 func TestRepeatable(t *testing.T) {
 	t.Run("int", func(t *testing.T) {
