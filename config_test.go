@@ -535,7 +535,7 @@ func TestMakeGenerator(t *testing.T) {
 
 	g = MakeGenerator(nopValue{})
 	v = g()
-	if _, ok := v.(*nopValue); !ok {
-		t.Errorf("MakeGenerator(nopValue{})() = %T, expected *nopValue", v)
+	if _, ok := v.(nopValue); !ok {
+		t.Errorf("MakeGenerator(nopValue{})() = %T, expected nopValue", v)
 	}
 }
