@@ -51,6 +51,47 @@ func TestSliceValueString(t *testing.T) {
 	}
 }
 
+type testUnexported struct {
+	unexported []string
+}
+
+type testExported struct {
+	Exported []string
+}
+
+func TestSliceValueSet(t *testing.T) {
+	t.Run("using value from exported field", func(t *testing.T) {
+		p := &testExported{}
+		v := reflect.Indirect(reflect.ValueOf(p))
+		pf := v.FieldByName("Exported")
+
+		sv := sliceValue{
+			value:     pf.Addr(),
+			generator: StringGenerator(),
+		}
+		err := sv.set("foo")
+		if err != nil {
+			t.Errorf("sliceValue{valueFromExportedField}.set(\"foo\"): unexpected error: %s", err)
+		}
+	})
+
+	t.Run("using value from unexported field", func(t *testing.T) {
+		p := &testUnexported{}
+		v := reflect.Indirect(reflect.ValueOf(p))
+		pf := v.FieldByName("unexported")
+
+		sv := sliceValue{
+			value:     pf.Addr(),
+			generator: StringGenerator(),
+		}
+		err := sv.set("foo")
+		if err == nil {
+			t.Logf("sliceValue.value was obtained by accessing an unexported struct field")
+			t.Errorf("sliceValue{valueFromUnexportedField}.set(\"foo\"): expected error, got nil")
+		}
+	})
+}
+
 func TestRepeatable(t *testing.T) {
 	t.Run("int", func(t *testing.T) {
 		var ii []int
