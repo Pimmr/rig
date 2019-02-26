@@ -60,7 +60,7 @@ func TestConfigUsage(t *testing.T) {
 		boolFlag      = "bool-flag"
 		boolEnv       = "BOOL_ENV"
 		boolUsage     = "bool usage"
-		boolDefault   = "false"
+		boolRequired  = "required"
 	)
 
 	var (
@@ -75,7 +75,7 @@ func TestConfigUsage(t *testing.T) {
 		Flags: []*Flag{
 			String(&s, stringFlag, "", ""),
 			Int(&i, "", intEnv, intUsage),
-			Bool(&b, boolFlag, boolEnv, boolUsage),
+			Required(Bool(&b, boolFlag, boolEnv, boolUsage)),
 			Float64(&f, "", "", "no flag or env set for this one"),
 		},
 	}
@@ -91,7 +91,7 @@ func TestConfigUsage(t *testing.T) {
 	expected := []string{
 		stringFlag, stringDefault,
 		intEnv, intUsage, intDefault,
-		boolFlag, boolEnv, boolUsage, boolDefault,
+		boolFlag, boolEnv, boolUsage, boolRequired,
 	}
 
 	bufStr := buf.String()
