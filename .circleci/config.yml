@@ -3,7 +3,7 @@ jobs:
   lint-and-test:
     docker:
       - image: circleci/golang:latest
-    working_directory: /config
+    working_directory: /app/config
     steps:
       - checkout
 
