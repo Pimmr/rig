@@ -141,27 +141,35 @@ func (c *Config) Usage() {
 			continue
 		}
 
-		switch {
-		case f.Name != "" && f.Env != "":
-			_, _ = fmt.Fprintf(c.FlagSet.Output(), "  -%s value, %s=value", f.Name, f.Env)
-		case f.Name != "":
-			_, _ = fmt.Fprintf(c.FlagSet.Output(), "  -%s value", f.Name)
-		case f.Env != "":
-			_, _ = fmt.Fprintf(c.FlagSet.Output(), "  %s=value", f.Env)
-		}
-		if f.TypeHint != "" {
-			_, _ = fmt.Fprintf(c.FlagSet.Output(), " (%s)", f.TypeHint)
-		}
+		c.flagUsage(f)
+	}
+}
 
-		_, _ = fmt.Fprint(c.FlagSet.Output(), "\n")
-		if f.Usage != "" {
-			_, _ = fmt.Fprintf(c.FlagSet.Output(), "        %s", f.Usage)
-			if f.defaultValue != "" && !f.Required {
-				_, _ = fmt.Fprintf(c.FlagSet.Output(), " (default %q)", f.defaultValue)
-			}
-			_, _ = fmt.Fprint(c.FlagSet.Output(), "\n")
-		} else if f.defaultValue != "" && !f.Required {
-			_, _ = fmt.Fprintf(c.FlagSet.Output(), "        (default %q)\n", f.defaultValue)
+func (c *Config) flagUsage(f *Flag) {
+	switch {
+	case f.Name != "" && f.Env != "":
+		_, _ = fmt.Fprintf(c.FlagSet.Output(), "  -%s value, %s=value", f.Name, f.Env)
+	case f.Name != "":
+		_, _ = fmt.Fprintf(c.FlagSet.Output(), "  -%s value", f.Name)
+	case f.Env != "":
+		_, _ = fmt.Fprintf(c.FlagSet.Output(), "  %s=value", f.Env)
+	}
+	if f.TypeHint != "" {
+		_, _ = fmt.Fprintf(c.FlagSet.Output(), " (%s)", f.TypeHint)
+	}
+
+	_, _ = fmt.Fprint(c.FlagSet.Output(), "\n")
+	c.flagUsageDoc(f)
+}
+
+func (c *Config) flagUsageDoc(f *Flag) {
+	if f.Usage != "" {
+		_, _ = fmt.Fprintf(c.FlagSet.Output(), "        %s", f.Usage)
+		if f.defaultValue != "" && !f.Required {
+			_, _ = fmt.Fprintf(c.FlagSet.Output(), " (default %q)", f.defaultValue)
 		}
+		_, _ = fmt.Fprint(c.FlagSet.Output(), "\n")
+	} else if f.defaultValue != "" && !f.Required {
+		_, _ = fmt.Fprintf(c.FlagSet.Output(), "        (default %q)\n", f.defaultValue)
 	}
 }
