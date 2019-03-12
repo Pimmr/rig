@@ -212,10 +212,10 @@ func TestRepeatable(t *testing.T) {
 		in1URL := urlMustParse(in1)
 		in2URL := urlMustParse(in2)
 		expected := []URLValue{
-			URLValue{
+			{
 				URL: &in1URL,
 			},
-			URLValue{
+			{
 				URL: &in2URL,
 			},
 		}
@@ -242,10 +242,10 @@ func TestRepeatable(t *testing.T) {
 		in1Regexp := regexp.MustCompile(in1)
 		in2Regexp := regexp.MustCompile(in2)
 		expected := []RegexpValue{
-			RegexpValue{
+			{
 				Regexp: &in1Regexp,
 			},
-			RegexpValue{
+			{
 				Regexp: &in2Regexp,
 			},
 		}
