@@ -23,6 +23,13 @@ func (ss stringeringStringSlice) String() string {
 	return strings.Join([]string(ss), ",")
 }
 
+func pointerToSlice(elems ...string) *[]string {
+	ss := make([]string, 0, len(elems))
+	ss = append(ss, elems...)
+
+	return &ss
+}
+
 func TestSliceValueString(t *testing.T) {
 	for _, test := range []struct {
 		value    interface{}
@@ -35,6 +42,10 @@ func TestSliceValueString(t *testing.T) {
 		{
 			value:    []stringeringString{"foo", "bar"},
 			expected: "[s:foo,s:bar]",
+		},
+		{
+			value:    pointerToSlice("foo", "bar"),
+			expected: "[foo,bar]",
 		},
 		{
 			value:    stringeringStringSlice{"foo", "bar"},

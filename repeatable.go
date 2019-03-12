@@ -26,9 +26,11 @@ func (vs sliceValue) String() string {
 		}
 	}
 
-	ss := make([]string, vs.value.Len())
-	for i := 0; i < vs.value.Len(); i++ {
-		ss[i] = fmt.Sprint(vs.value.Index(i))
+	value := reflect.Indirect(vs.value)
+
+	ss := make([]string, value.Len())
+	for i := 0; i < value.Len(); i++ {
+		ss[i] = fmt.Sprint(value.Index(i))
 	}
 	return "[" + strings.Join(ss, ",") + "]"
 }
