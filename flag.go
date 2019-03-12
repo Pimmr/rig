@@ -11,8 +11,8 @@ type Flag struct {
 	Name     string
 	Env      string
 	Usage    string
-	Required bool
 	TypeHint string
+	Required bool
 
 	set          bool
 	defaultValue string

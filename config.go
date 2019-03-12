@@ -63,7 +63,7 @@ func (c *Config) Parse(arguments []string) error {
 			continue
 		}
 
-		if f.Name != "" { // we want to maintain `"flag".FlagSet.Visit`'s behaviour
+		if f.Name != "" { // we want to maintain `"flag".FlagSet.Visit`'s behavior
 			err = c.FlagSet.Set(f.Name, v)
 			if err != nil {
 				return c.handleError(errors.Wrapf(err, "invalid value %q for env variable %q", v, f.Env))
@@ -122,11 +122,12 @@ func (c *Config) Usage() {
 			continue
 		}
 
-		if f.Name != "" && f.Env != "" {
+		switch {
+		case f.Name != "" && f.Env != "":
 			_, _ = fmt.Fprintf(c.FlagSet.Output(), "  -%s value, %s=value", f.Name, f.Env)
-		} else if f.Name != "" {
+		case f.Name != "":
 			_, _ = fmt.Fprintf(c.FlagSet.Output(), "  -%s value", f.Name)
-		} else if f.Env != "" {
+		case f.Env != "":
 			_, _ = fmt.Fprintf(c.FlagSet.Output(), "  %s=value", f.Env)
 		}
 		if f.TypeHint != "" {
