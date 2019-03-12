@@ -42,14 +42,8 @@ func (c *Config) Parse(arguments []string) error {
 	c.FlagSet.Usage = c.Usage
 
 	c.setDefaultValues()
-	for _, f := range c.Flags {
-		if f.Name == "" {
-			continue
-		}
-		c.FlagSet.Var(f, f.Name, f.Usage)
-	}
 
-	err := c.FlagSet.Parse(arguments)
+	err := c.parseFlagset(arguments)
 	if err != nil {
 		return c.handleError(err)
 	}
@@ -77,6 +71,31 @@ func (c *Config) Parse(arguments []string) error {
 		}
 	}
 
+	err = c.handleMissingFlags()
+	if err != nil {
+		return c.handleError(err)
+	}
+
+	return nil
+}
+
+func (c *Config) parseFlagset(arguments []string) error {
+	for _, f := range c.Flags {
+		if f.Name == "" {
+			continue
+		}
+		c.FlagSet.Var(f, f.Name, f.Usage)
+	}
+
+	err := c.FlagSet.Parse(arguments)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (c *Config) handleMissingFlags() error {
 	hasMissing := false
 	for _, f := range c.Flags {
 		if !f.Required || f.set {
@@ -87,7 +106,7 @@ func (c *Config) Parse(arguments []string) error {
 		hasMissing = true
 	}
 	if hasMissing {
-		return c.handleError(errors.New("missing required values"))
+		return errors.New("missing required values")
 	}
 
 	return nil
