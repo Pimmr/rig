@@ -47,7 +47,7 @@ jobs:
             go test -test.v -test.bench=. -covermode=count -coverprofile=coverage.out ./...
             go test -test.v ./... | go-junit-report > /home/circleci/test-results/go-test/report.xml
             go test -test.race ./...
-            goveralls -coverprofile=coverage.out -service=travis-ci -repotoken ${COVERALLS_TOKEN}
+            goveralls -coverprofile=coverage.out -service=circle-ci -repotoken ${COVERALLS_TOKEN}
 
       - store_test_results:
           path: /home/circleci/test-results
