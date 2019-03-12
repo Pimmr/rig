@@ -23,17 +23,22 @@ func TestURLScheme(t *testing.T) {
 		expectError bool
 	}{
 		{
+			scheme:      "",
+			input:       urlMustParse("https://example.com/foo"),
+			expectError: false,
+		},
+		{
+			scheme:      "",
+			input:       urlMustParse("//example.com/foo"),
+			expectError: false,
+		},
+		{
 			scheme:      "https",
 			input:       urlMustParse("https://example.com/foo"),
 			expectError: false,
 		},
 		{
 			scheme:      "https",
-			input:       urlMustParse("http://example.com/foo"),
-			expectError: true,
-		},
-		{
-			scheme:      "",
 			input:       urlMustParse("http://example.com/foo"),
 			expectError: true,
 		},
@@ -59,6 +64,16 @@ func TestURLExcludeScheme(t *testing.T) {
 		input       *url.URL
 		expectError bool
 	}{
+		{
+			scheme:      "",
+			input:       urlMustParse("https://example.com/foo"),
+			expectError: false,
+		},
+		{
+			scheme:      "",
+			input:       urlMustParse("//example.com/foo"),
+			expectError: false,
+		},
 		{
 			scheme:      "http",
 			input:       urlMustParse("https://example.com/foo"),
