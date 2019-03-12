@@ -3,7 +3,7 @@ jobs:
   lint-and-test:
     docker:
       - image: circleci/golang:latest
-    working_directory: /app/config
+    working_directory: /home/circleci/config
     steps:
       - checkout
 
@@ -37,13 +37,13 @@ jobs:
       - run:
           name: Tests
           command: |
-            mkdir -p /test-results/go-test
+            mkdir -p /home/circleci/test-results/go-test
             go test -test.v -test.bench=. ./...
-            go test -test.v ./... | go-junit-report > /test-results/go-test/report.xml
+            go test -test.v ./... | go-junit-report > /home/circleci/test-results/go-test/report.xml
             go test -test.race ./...
 
       - store_test_results:
-          path: /test-results
+          path: /home/circleci/test-results
 
 
 workflows:
