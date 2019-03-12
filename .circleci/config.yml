@@ -17,6 +17,11 @@ jobs:
             - go-pkg-cache-v1-{{ checksum "go.mod" }}
 
       - run:
+          name: Installing tools
+          command: |
+            go get -u -v github.com/jstemmer/go-junit-report
+
+      - run:
           name: Building examples
           command: |
             TAG=${CIRCLE_TAG:-dev}
