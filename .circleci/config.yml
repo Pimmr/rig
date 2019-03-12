@@ -2,10 +2,15 @@ version: 2
 jobs:
   lint-and-test:
     docker:
-      - image: golang:latest
+      - image: circleci/golang:latest
     working_directory: /config
     steps:
       - checkout
+
+      - run:
+          name: go version
+          command: |
+            go version
 
       - restore_cache:
           keys:
