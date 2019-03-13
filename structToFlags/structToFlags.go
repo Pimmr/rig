@@ -28,31 +28,63 @@ func StructToFlags(v interface{}) ([]*rig.Flag, error) {
 		typeHint := fieldType.Tag.Get("rig-typehint")
 		required := fieldType.Tag.Get("rig-required")
 
-		if flagName == "" && env == "" {
+		if flagName == "" && env == "" && field.Kind() != reflect.Struct {
 			continue
 		}
 		if !field.CanAddr() {
-			return flags, errors.Errorf("%s.%s: cannot get address", valType, fieldType.Name)
+			return nil, errors.Errorf("%s.%s: cannot get address", valType, fieldType.Name)
 		}
+		isStruct := field.Kind() == reflect.Struct
 		field = field.Addr()
-		if !field.CanInterface() {
-			return flags, errors.Errorf("%s.%s: cannot get interface", valType, fieldType.Name)
+
+		if isStruct {
+			ff, err := StructToFlags(field.Interface())
+			if err != nil {
+				return nil, err
+			}
+			flags = append(flags, prefix(ff, flagName, env)...)
+			continue
 		}
 
 		f, err := flagFromInterface(field.Interface(), flagName, env, usage)
 		if err != nil {
-			return flags, err
+			return nil, err
 		}
-		if typeHint != "" {
-			f = rig.TypeHint(f, typeHint)
-		}
-		if required == "true" {
-			f = rig.Required(f)
-		}
+		f = applyTypeHint(f, typeHint)
+		f = applyRequired(f, required == "true")
 		flags = append(flags, f)
 	}
 
 	return flags, nil
+}
+
+func applyTypeHint(f *rig.Flag, typeHint string) *rig.Flag {
+	if typeHint == "" {
+		return f
+	}
+
+	return rig.TypeHint(f, typeHint)
+}
+
+func applyRequired(f *rig.Flag, required bool) *rig.Flag {
+	if !required {
+		return f
+	}
+
+	return rig.Required(f)
+}
+
+func prefix(ff []*rig.Flag, flagName, env string) []*rig.Flag {
+	for _, f := range ff {
+		if flagName != "" && f.Name != "" {
+			f.Name = flagName + "-" + f.Name
+		}
+		if env != "" && f.Env != "" {
+			f.Env = env + "_" + f.Env
+		}
+	}
+
+	return ff
 }
 
 //nolint:gocyclo
