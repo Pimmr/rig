@@ -5,7 +5,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/Pimmr/config"
+	"github.com/Pimmr/rig"
 )
 
 type Date time.Time
@@ -24,17 +24,17 @@ func main() {
 	var (
 		flagA []int
 		flagB []string
-		flagC []config.URLValue
+		flagC []rig.URLValue
 		flagD []Date
 	)
 
-	err := config.Parse(
-		config.Required(config.TypeHint(config.Repeatable(
-			&flagA, config.IntGenerator(), "flag-a", "FLAG_A", "flag A",
+	err := rig.Parse(
+		rig.Required(rig.TypeHint(rig.Repeatable(
+			&flagA, rig.IntGenerator(), "flag-a", "FLAG_A", "flag A",
 		), "repeatable integer")),
-		config.TypeHint(config.Repeatable(&flagB, config.StringGenerator(), "flag-b", "FLAG_B", "flag B"), "repeatable string"),
-		config.TypeHint(config.Repeatable(&flagC, config.URLGenerator(), "flag-c", "FLAG_C", "flag C"), "repeatable URL"),
-		config.TypeHint(config.Repeatable(&flagD, config.MakeGenerator(new(Date)), "flag-d", "FLAG_D", "flag D (i.e 2006-01-02)"), "repeatable date"),
+		rig.TypeHint(rig.Repeatable(&flagB, rig.StringGenerator(), "flag-b", "FLAG_B", "flag B"), "repeatable string"),
+		rig.TypeHint(rig.Repeatable(&flagC, rig.URLGenerator(), "flag-c", "FLAG_C", "flag C"), "repeatable URL"),
+		rig.TypeHint(rig.Repeatable(&flagD, rig.MakeGenerator(new(Date)), "flag-d", "FLAG_D", "flag D (i.e 2006-01-02)"), "repeatable date"),
 	)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)

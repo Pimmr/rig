@@ -5,8 +5,8 @@ import (
 	"os"
 	"time"
 
-	"github.com/Pimmr/config"
-	"github.com/Pimmr/config/validators"
+	"github.com/Pimmr/rig"
+	"github.com/Pimmr/rig/validators"
 )
 
 func Palindrome(s string) error {
@@ -30,13 +30,13 @@ func main() {
 		flagD = 1 * time.Hour
 	)
 
-	err := config.Parse(
-		config.Int(&flagA, "flag-a", "FLAG_A", "flag A", validators.IntRange(0, 54)),
-		config.Float64(&flagB, "flag-b", "FLAG_B", "flag B", validators.Float64Range(0.4, 12.5)),
-		config.String(
+	err := rig.Parse(
+		rig.Int(&flagA, "flag-a", "FLAG_A", "flag A", validators.IntRange(0, 54)),
+		rig.Float64(&flagB, "flag-b", "FLAG_B", "flag B", validators.Float64Range(0.4, 12.5)),
+		rig.String(
 			&flagC, "flag-c", "FLAG_C", "flag C",
 			validators.StringExcludeChars("bB"), validators.StringLengthMin(5), Palindrome),
-		config.Duration(&flagD, "flag-d", "FLAG_D", "flag D", validators.DurationRounded(10*time.Minute)),
+		rig.Duration(&flagD, "flag-d", "FLAG_D", "flag D", validators.DurationRounded(10*time.Minute)),
 	)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)

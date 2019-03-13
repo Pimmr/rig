@@ -1,10 +1,10 @@
-package config
+package rig
 
 import (
 	"flag"
 	"strconv"
 
-	"github.com/Pimmr/config/validators"
+	"github.com/Pimmr/rig/validators"
 )
 
 type intValidators struct {

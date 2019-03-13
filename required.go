@@ -1,4 +1,4 @@
-package config
+package rig
 
 func Required(f *Flag) *Flag {
 	typeHint := f.TypeHint

@@ -1,10 +1,10 @@
-package config
+package rig
 
 import (
 	"net/url"
 	"testing"
 
-	"github.com/Pimmr/config/validators"
+	"github.com/Pimmr/rig/validators"
 	"github.com/pkg/errors"
 )
 

@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/Pimmr/config"
-	"github.com/Pimmr/config/validators"
+	"github.com/Pimmr/rig"
+	"github.com/Pimmr/rig/validators"
 )
 
 type countTheDotsValue uint
@@ -35,9 +35,9 @@ func (d *countTheDotsValue) Set(s string) error {
 	return nil
 }
 
-func CountTheDots(v *uint, name, env, usage string) *config.Flag {
-	return config.TypeHint(
-		config.Var(
+func CountTheDots(v *uint, name, env, usage string) *rig.Flag {
+	return rig.TypeHint(
+		rig.Var(
 			(*countTheDotsValue)(v), name, env, usage,
 			VarToIntValidator(RangeValidator(1, 8)),
 		),
@@ -78,12 +78,12 @@ func main() {
 		flagE bool
 	)
 
-	err := config.Parse(
-		config.Required(config.Int(&flagA, "flag-a", "FLAG_A", "flag A", RangeValidator(1, 667))),
-		config.String(&flagB, "flag-b", "FLAG_B", ""),
+	err := rig.Parse(
+		rig.Required(rig.Int(&flagA, "flag-a", "FLAG_A", "flag A", RangeValidator(1, 667))),
+		rig.String(&flagB, "flag-b", "FLAG_B", ""),
 		CountTheDots(&flagC, "flag-c", "FLAG_C", "flag C"),
-		config.Repeatable(&flagD, config.StringGenerator(), "flag-d", "FLAG_D", "flag D"),
-		config.Bool(&flagE, "flag-e", "FLAG_E", "flag E"),
+		rig.Repeatable(&flagD, rig.StringGenerator(), "flag-d", "FLAG_D", "flag D"),
+		rig.Bool(&flagE, "flag-e", "FLAG_E", "flag E"),
 	)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)

@@ -1,10 +1,10 @@
-package config
+package rig
 
 import (
 	"flag"
 	"regexp"
 
-	"github.com/Pimmr/config/validators"
+	"github.com/Pimmr/rig/validators"
 )
 
 type regexpValidators struct {

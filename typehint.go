@@ -1,4 +1,4 @@
-package config
+package rig
 
 func TypeHint(f *Flag, typeHint string) *Flag {
 	return &Flag{

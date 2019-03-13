@@ -1,4 +1,4 @@
-package config
+package rig
 
 import (
 	"flag"
