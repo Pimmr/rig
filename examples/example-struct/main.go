@@ -8,17 +8,18 @@ import (
 )
 
 type bar struct {
-	FlagE int     `rig-flag:"flag-e" rig-env:"FLAG_E" rig-usage:"Flag E"`
-	FlagF float64 `rig-flag:"flag-f" rig-env:"FLAG_F" rig-usage:"Flag F"`
+	FlagE int     `flag:"flag-e" env:"FLAG_E" usage:"Flag E"`
+	FlagF float64 `flag:"flag-f" env:"FLAG_F" usage:"Flag F"`
 }
 
 type foo struct {
-	FlagA string         `rig-flag:"flag-a" rig-env:"FLAG_A" rig-usage:"Flag A"`
-	FlagB int            `rig-flag:"flag-b" rig-env:"FLAG_B" rig-usage:"Flag B" rig-required:"true"`
-	FlagC []int          `rig-flag:"flag-c" rig-env:"FLAG_C" rig-usage:"Flag C" rig-typehint:"many ints"`
-	FlagD []rig.URLValue `rig-flag:"flag-d" rig-usage:"Flag D"`
-	Bar   bar            `rig-flag:"bar" rig-env:"BAR"`
+	FlagA string         `flag:"flag-a" env:"FLAG_A" usage:"Flag A"`
+	FlagB int            `flag:"flag-b" env:"FLAG_B" usage:"Flag B" required:"true"`
+	FlagC []int          `flag:"flag-c" env:"FLAG_C" usage:"Flag C" typehint:"many ints"`
+	FlagD []rig.URLValue `flag:"flag-d" usage:"Flag D"`
+	Bar   bar            `flag:"bar" env:"BAR" required:"t"`
 	Baz   bar
+	Blah  bar `ignore:"true"`
 }
 
 func main() {

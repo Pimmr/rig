@@ -5,11 +5,71 @@ import (
 	"net/url"
 	"reflect"
 	"regexp"
+	"strconv"
 	"time"
 
 	"github.com/Pimmr/rig"
 	"github.com/pkg/errors"
 )
+
+type fieldInfo struct {
+	field reflect.Value
+	typ   reflect.StructField
+
+	flag     string
+	env      string
+	usage    string
+	typeHint string
+	required bool
+
+	isStruct bool
+}
+
+func parseBool(s string) (bool, error) {
+	if s == "" {
+		return false, nil
+	}
+
+	return strconv.ParseBool(s)
+}
+
+func getFieldInfo(field reflect.Value, typ reflect.StructField) (*fieldInfo, error) {
+	ignore, err := parseBool(typ.Tag.Get("ignore"))
+	if err != nil || ignore {
+		return nil, err
+	}
+
+	required, err := parseBool(typ.Tag.Get("required"))
+	if err != nil {
+		return nil, err
+	}
+
+	info := &fieldInfo{
+		field: field,
+		typ:   typ,
+
+		flag:     typ.Tag.Get("flag"),
+		env:      typ.Tag.Get("env"),
+		usage:    typ.Tag.Get("usage"),
+		typeHint: typ.Tag.Get("typehint"),
+		required: required,
+
+		isStruct: field.Kind() == reflect.Struct,
+	}
+
+	if info.flag == "" && info.env == "" && !info.isStruct {
+		return nil, nil
+	}
+	if !info.field.CanAddr() {
+		return nil, errors.Errorf(".%s: cannot get address", info.typ.Name)
+	}
+	info.field = info.field.Addr()
+	if !info.field.CanInterface() {
+		return nil, errors.Errorf(".%s: cannot get interface", info.typ.Name)
+	}
+
+	return info, nil
+}
 
 func StructToFlags(v interface{}) ([]*rig.Flag, error) {
 	val := reflect.Indirect(reflect.ValueOf(v))
@@ -20,38 +80,29 @@ func StructToFlags(v interface{}) ([]*rig.Flag, error) {
 
 	flags := make([]*rig.Flag, 0, val.NumField())
 	for i := 0; i < val.NumField(); i++ {
-		field := val.Field(i)
-		fieldType := valType.Field(i)
-		flagName := fieldType.Tag.Get("rig-flag")
-		env := fieldType.Tag.Get("rig-env")
-		usage := fieldType.Tag.Get("rig-usage")
-		typeHint := fieldType.Tag.Get("rig-typehint")
-		required := fieldType.Tag.Get("rig-required")
-
-		if flagName == "" && env == "" && field.Kind() != reflect.Struct {
-			continue
-		}
-		if !field.CanAddr() {
-			return nil, errors.Errorf("%s.%s: cannot get address", valType, fieldType.Name)
-		}
-		isStruct := field.Kind() == reflect.Struct
-		field = field.Addr()
-
-		if isStruct {
-			ff, err := StructToFlags(field.Interface())
-			if err != nil {
-				return nil, err
-			}
-			flags = append(flags, prefix(ff, flagName, env)...)
-			continue
-		}
-
-		f, err := flagFromInterface(field.Interface(), flagName, env, usage)
+		info, err := getFieldInfo(val.Field(i), valType.Field(i))
 		if err != nil {
 			return nil, err
 		}
-		f = applyTypeHint(f, typeHint)
-		f = applyRequired(f, required == "true")
+		if info == nil {
+			continue
+		}
+
+		if info.isStruct {
+			ff, err := StructToFlags(info.field.Interface())
+			if err != nil {
+				return nil, err
+			}
+			flags = append(flags, prefix(ff, info.flag, info.env, info.required)...)
+			continue
+		}
+
+		f, err := flagFromInterface(info.field.Interface(), info.flag, info.env, info.usage)
+		if err != nil {
+			return nil, err
+		}
+		f = applyTypeHint(f, info.typeHint)
+		f = applyRequired(f, info.required)
 		flags = append(flags, f)
 	}
 
@@ -67,21 +118,22 @@ func applyTypeHint(f *rig.Flag, typeHint string) *rig.Flag {
 }
 
 func applyRequired(f *rig.Flag, required bool) *rig.Flag {
-	if !required {
+	if !required || f.Required {
 		return f
 	}
 
 	return rig.Required(f)
 }
 
-func prefix(ff []*rig.Flag, flagName, env string) []*rig.Flag {
-	for _, f := range ff {
+func prefix(ff []*rig.Flag, flagName, env string, required bool) []*rig.Flag {
+	for i, f := range ff {
 		if flagName != "" && f.Name != "" {
 			f.Name = flagName + "-" + f.Name
 		}
 		if env != "" && f.Env != "" {
 			f.Env = env + "_" + f.Env
 		}
+		ff[i] = applyRequired(f, required)
 	}
 
 	return ff
