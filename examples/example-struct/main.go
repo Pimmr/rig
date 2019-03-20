@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/Pimmr/rig"
-	"github.com/Pimmr/rig/structToFlags"
 )
 
 type bar struct {
@@ -25,12 +24,7 @@ type foo struct {
 func main() {
 	var f foo
 
-	flags, err := structToFlags.StructToFlags(&f)
-	if err != nil {
-		panic(err)
-	}
-
-	err = rig.Parse(flags...)
+	err := rig.ParseStruct(&f)
 	if err != nil {
 		panic(err)
 	}

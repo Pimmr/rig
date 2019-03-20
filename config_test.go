@@ -13,17 +13,24 @@ import (
 	"github.com/pkg/errors"
 )
 
+// commandLineFlags get flags from the command line. Parse and ParseStruct uses os.Args, so we need to copy `go test`'s flags to avoid errors on -test.* args
+func commandLineFlags(t *testing.T) []*Flag {
+	t.Helper()
+	flags := []*Flag{}
+	flag.CommandLine.VisitAll(func(f *flag.Flag) {
+		flags = append(flags, Var(MakeGenerator(f.Value)(), f.Name, "", ""))
+	})
+
+	return flags
+}
+
 func TestParse(t *testing.T) {
 	var (
 		s string
 		i int
 	)
 
-	// Parse uses os.Args, so we need to copy `go test`'s flags to avoid errors on -test.* args
-	flags := []*Flag{}
-	flag.CommandLine.VisitAll(func(f *flag.Flag) {
-		flags = append(flags, Var(MakeGenerator(f.Value)(), f.Name, "", ""))
-	})
+	flags := commandLineFlags(t)
 
 	flags = append(flags, String(&s, "string-flag", "STRING_ENV", ""))
 	flags = append(flags, Int(&i, "int-flag", "INT_ENV", ""))

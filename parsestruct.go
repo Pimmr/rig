@@ -1,14 +1,14 @@
-package structToFlags
+package rig
 
 import (
 	"flag"
 	"net/url"
+	"os"
 	"reflect"
 	"regexp"
 	"strconv"
 	"time"
 
-	"github.com/Pimmr/rig"
 	"github.com/pkg/errors"
 )
 
@@ -64,21 +64,34 @@ func getFieldInfo(field reflect.Value, typ reflect.StructField) (*fieldInfo, err
 		return nil, errors.Errorf(".%s: cannot get address", info.typ.Name)
 	}
 	info.field = info.field.Addr()
-	if !info.field.CanInterface() {
-		return nil, errors.Errorf(".%s: cannot get interface", info.typ.Name)
-	}
 
 	return info, nil
 }
 
-func StructToFlags(v interface{}) ([]*rig.Flag, error) {
+func ParseStruct(v interface{}, additionalFlags ...*Flag) error {
+	flags, err := StructToFlags(v)
+	if err != nil {
+		return err
+	}
+
+	flags = append(flags, additionalFlags...)
+
+	config := &Config{
+		FlagSet: flag.NewFlagSet(os.Args[0], flag.ExitOnError),
+		Flags:   flags,
+	}
+
+	return config.Parse(os.Args[1:])
+}
+
+func StructToFlags(v interface{}) ([]*Flag, error) {
 	val := reflect.Indirect(reflect.ValueOf(v))
 	if val.Kind() != reflect.Struct {
 		return nil, errors.Errorf("%T is not a struct", v)
 	}
 	valType := val.Type()
 
-	flags := make([]*rig.Flag, 0, val.NumField())
+	flags := make([]*Flag, 0, val.NumField())
 	for i := 0; i < val.NumField(); i++ {
 		info, err := getFieldInfo(val.Field(i), valType.Field(i))
 		if err != nil {
@@ -109,23 +122,23 @@ func StructToFlags(v interface{}) ([]*rig.Flag, error) {
 	return flags, nil
 }
 
-func applyTypeHint(f *rig.Flag, typeHint string) *rig.Flag {
+func applyTypeHint(f *Flag, typeHint string) *Flag {
 	if typeHint == "" {
 		return f
 	}
 
-	return rig.TypeHint(f, typeHint)
+	return TypeHint(f, typeHint)
 }
 
-func applyRequired(f *rig.Flag, required bool) *rig.Flag {
+func applyRequired(f *Flag, required bool) *Flag {
 	if !required || f.Required {
 		return f
 	}
 
-	return rig.Required(f)
+	return Required(f)
 }
 
-func prefix(ff []*rig.Flag, flagName, env string, required bool) []*rig.Flag {
+func prefix(ff []*Flag, flagName, env string, required bool) []*Flag {
 	for i, f := range ff {
 		if flagName != "" && f.Name != "" {
 			f.Name = flagName + "-" + f.Name
@@ -140,55 +153,55 @@ func prefix(ff []*rig.Flag, flagName, env string, required bool) []*rig.Flag {
 }
 
 //nolint:gocyclo
-func flagFromInterface(i interface{}, flagName, env, usage string) (*rig.Flag, error) {
+func flagFromInterface(i interface{}, flagName, env, usage string) (*Flag, error) {
 	switch t := i.(type) {
 	default:
 		v, ok := i.(flag.Value)
 		if ok {
-			return rig.Var(v, flagName, env, usage), nil
+			return Var(v, flagName, env, usage), nil
 		}
 
 		return nil, errors.Errorf("unsupported type %T", i)
 	case *int:
-		return rig.Int(t, flagName, env, usage), nil
+		return Int(t, flagName, env, usage), nil
 	case *int64:
-		return rig.Int64(t, flagName, env, usage), nil
+		return Int64(t, flagName, env, usage), nil
 	case *uint:
-		return rig.Uint(t, flagName, env, usage), nil
+		return Uint(t, flagName, env, usage), nil
 	case *uint64:
-		return rig.Uint64(t, flagName, env, usage), nil
+		return Uint64(t, flagName, env, usage), nil
 	case *string:
-		return rig.String(t, flagName, env, usage), nil
+		return String(t, flagName, env, usage), nil
 	case *bool:
-		return rig.Bool(t, flagName, env, usage), nil
+		return Bool(t, flagName, env, usage), nil
 	case *time.Duration:
-		return rig.Duration(t, flagName, env, usage), nil
+		return Duration(t, flagName, env, usage), nil
 	case *float64:
-		return rig.Float64(t, flagName, env, usage), nil
+		return Float64(t, flagName, env, usage), nil
 	case **regexp.Regexp:
-		return rig.Regexp(t, flagName, env, usage), nil
+		return Regexp(t, flagName, env, usage), nil
 	case **url.URL:
-		return rig.URL(t, flagName, env, usage), nil
+		return URL(t, flagName, env, usage), nil
 
 	case *[]int:
-		return rig.Repeatable(t, rig.IntGenerator(), flagName, env, usage), nil
+		return Repeatable(t, IntGenerator(), flagName, env, usage), nil
 	case *[]int64:
-		return rig.Repeatable(t, rig.Int64Generator(), flagName, env, usage), nil
+		return Repeatable(t, Int64Generator(), flagName, env, usage), nil
 	case *[]uint:
-		return rig.Repeatable(t, rig.UintGenerator(), flagName, env, usage), nil
+		return Repeatable(t, UintGenerator(), flagName, env, usage), nil
 	case *[]uint64:
-		return rig.Repeatable(t, rig.Uint64Generator(), flagName, env, usage), nil
+		return Repeatable(t, Uint64Generator(), flagName, env, usage), nil
 	case *[]string:
-		return rig.Repeatable(t, rig.StringGenerator(), flagName, env, usage), nil
+		return Repeatable(t, StringGenerator(), flagName, env, usage), nil
 	case *[]bool:
-		return rig.Repeatable(t, rig.BoolGenerator(), flagName, env, usage), nil
+		return Repeatable(t, BoolGenerator(), flagName, env, usage), nil
 	case *[]time.Duration:
-		return rig.Repeatable(t, rig.DurationGenerator(), flagName, env, usage), nil
+		return Repeatable(t, DurationGenerator(), flagName, env, usage), nil
 	case *[]float64:
-		return rig.Repeatable(t, rig.Float64Generator(), flagName, env, usage), nil
-	case *[]rig.RegexpValue:
-		return rig.Repeatable(t, rig.RegexpGenerator(), flagName, env, usage), nil
-	case *[]rig.URLValue:
-		return rig.Repeatable(t, rig.URLGenerator(), flagName, env, usage), nil
+		return Repeatable(t, Float64Generator(), flagName, env, usage), nil
+	case *[]RegexpValue:
+		return Repeatable(t, RegexpGenerator(), flagName, env, usage), nil
+	case *[]URLValue:
+		return Repeatable(t, URLGenerator(), flagName, env, usage), nil
 	}
 }
