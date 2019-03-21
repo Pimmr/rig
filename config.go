@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"sort"
 
 	"github.com/pkg/errors"
 )
@@ -145,6 +146,10 @@ func (c *Config) handleError(err error) error {
 func (c *Config) Usage() {
 	c.setDefaultValues()
 
+	sort.Slice(c.Flags, func(i, j int) bool {
+		return c.Flags[i].Required && !c.Flags[j].Required
+	})
+
 	fmt.Fprintf(c.FlagSet.Output(), "Usage of %s:\n", c.FlagSet.Name())
 	lines := make([][]string, 0, len(c.Flags))
 	for _, f := range c.Flags {
@@ -188,19 +193,19 @@ func offsetsForLines(lines [][]string, margin, sep int) []int {
 }
 
 func (c *Config) flagUsage(f *Flag) []string {
+	typ := f.TypeHint
+	if typ == "" {
+		typ = "value"
+	}
+
 	line := []string{}
 	switch {
 	case f.Name != "" && f.Env != "":
-		line = append(line, flagUsageExample(f)+", "+f.Env+"=value")
+		line = append(line, flagUsageExample(f, typ)+", "+f.Env+"="+typ)
 	case f.Name != "":
-		line = append(line, flagUsageExample(f))
+		line = append(line, flagUsageExample(f, typ))
 	case f.Env != "":
-		line = append(line, f.Env+"=value")
-	}
-	if f.TypeHint != "" {
-		line = append(line, fmt.Sprintf("(%s)", f.TypeHint))
-	} else {
-		line = append(line, "")
+		line = append(line, f.Env+"="+typ)
 	}
 
 	usage := c.flagUsageDoc(f)
@@ -211,24 +216,29 @@ func (c *Config) flagUsage(f *Flag) []string {
 	return line
 }
 
-func flagUsageExample(f *Flag) string {
+func flagUsageExample(f *Flag, typ string) string {
 	if f.IsBoolFlag() {
 		return fmt.Sprintf("-%s", f.Name)
 	}
 
-	return fmt.Sprintf("-%s value", f.Name)
+	return fmt.Sprintf("-%s %s", f.Name, typ)
 }
 
 func (c *Config) flagUsageDoc(f *Flag) string {
 	s := ""
 
-	if f.Usage != "" {
+	switch {
+	case f.Usage != "":
 		s += f.Usage
 		if f.defaultValue != "" && !f.Required {
 			s += fmt.Sprintf(" (default %q)", f.defaultValue)
+		} else if f.Required {
+			s += " (required)"
 		}
-	} else if f.defaultValue != "" && !f.Required {
+	case f.defaultValue != "" && !f.Required:
 		s += fmt.Sprintf("(default %q)", f.defaultValue)
+	case f.Required:
+		s += "(required)"
 	}
 
 	return s

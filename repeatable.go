@@ -114,16 +114,18 @@ func (vs sliceValue) set(s string) error {
 // Repeatable creates a flag that is repeatable. The variable `v` provided should be a pointer to a slice.
 // The Generator should generates values that are assignable to the slice's emlements type.
 func Repeatable(v interface{}, generator Generator, flag, env, usage string, validators ...validators.Var) *Flag {
+	value := reflect.ValueOf(v)
+
 	return &Flag{
 		Value: sliceValue{
-			value:      reflect.ValueOf(v),
+			value:      value,
 			generator:  generator,
 			validators: validators,
 		},
 		Name:     flag,
 		Env:      env,
 		Usage:    usage,
-		TypeHint: "repeatable",
+		TypeHint: reflect.Indirect(value).Type().String(),
 	}
 }
 
