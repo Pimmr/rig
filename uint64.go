@@ -40,6 +40,7 @@ func (i *uint64Value) Set(s string) error {
 	return err
 }
 
+// Uint64 creates a flag for a uint64 variable.
 func Uint64(v *uint64, flag, env, usage string, validators ...validators.Uint64) *Flag {
 	return &Flag{
 		Value: uint64Validators{
@@ -53,6 +54,7 @@ func Uint64(v *uint64, flag, env, usage string, validators ...validators.Uint64)
 	}
 }
 
+// Uint64Generator is the default uint64 generator, to be used with Repeatable for uint64 slices.
 func Uint64Generator() Generator {
 	return func() flag.Value {
 		return new(uint64Value)

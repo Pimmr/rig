@@ -4,8 +4,10 @@ import (
 	"fmt"
 )
 
+// A Int validator should return an error if the int provided is not considered valid, nil otherwise.
 type Int func(int) error
 
+// IntRange creates a Int validator that fails when the int is strictly smaller than `min` or strictly larger than `max`.
 func IntRange(min, max int) Int {
 	return func(i int) error {
 		if i < min {
@@ -19,6 +21,7 @@ func IntRange(min, max int) Int {
 	}
 }
 
+// IntMin creates a Int validator that fails when the int is strictly smaller than `min`.
 func IntMin(min int) Int {
 	return func(i int) error {
 		if i < min {
@@ -29,6 +32,7 @@ func IntMin(min int) Int {
 	}
 }
 
+// IntMax creates a Int validator that fails when the int is strictly larger than `max`.
 func IntMax(max int) Int {
 	return func(i int) error {
 		if i > max {

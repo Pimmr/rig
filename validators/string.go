@@ -5,8 +5,10 @@ import (
 	"strings"
 )
 
+// A String validator should return an error if the string provided is not considered valid, nil otherwise.
 type String func(string) error
 
+// StringNotEmpty creates a String validator that fails when the string is empty (after calling strings.TrimSpace).
 func StringNotEmpty() String {
 	return func(s string) error {
 		if strings.TrimSpace(s) == "" {
@@ -17,6 +19,7 @@ func StringNotEmpty() String {
 	}
 }
 
+// StringLengthRange creates a String validator that fails when the string is strictly shorter than `min` or strictly longer than `max`.
 func StringLengthRange(min, max int) String {
 	return func(s string) error {
 		if len(s) < min {
@@ -30,6 +33,7 @@ func StringLengthRange(min, max int) String {
 	}
 }
 
+// StringLengthMin creates a String validator that fails when the string is strictly shorter than `min`.
 func StringLengthMin(min int) String {
 	return func(s string) error {
 		if len(s) < min {
@@ -40,6 +44,7 @@ func StringLengthMin(min int) String {
 	}
 }
 
+// StringLengthMax creates a String validator that fails when the string is strictly longer than `max`.
 func StringLengthMax(max int) String {
 	return func(s string) error {
 		if len(s) > max {
@@ -50,6 +55,7 @@ func StringLengthMax(max int) String {
 	}
 }
 
+// StringExcludeChars creates a String validator that fails when the string contains one ore more of the characters in `chars`.
 func StringExcludeChars(chars string) String {
 	return func(s string) error {
 		if strings.ContainsAny(s, chars) {
@@ -60,6 +66,7 @@ func StringExcludeChars(chars string) String {
 	}
 }
 
+// StringExcludePrefix creates a String validator that fails when the string starts with `prefix`.
 func StringExcludePrefix(prefix string) String {
 	return func(s string) error {
 		if strings.HasPrefix(s, prefix) {
@@ -70,6 +77,7 @@ func StringExcludePrefix(prefix string) String {
 	}
 }
 
+// StringExcludeSuffix creates a String validator that fails when the string ends with `suffix`.
 func StringExcludeSuffix(suffix string) String {
 	return func(s string) error {
 		if strings.HasSuffix(s, suffix) {

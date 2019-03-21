@@ -8,6 +8,8 @@ import (
 	"github.com/pkg/errors"
 )
 
+// Parse uses a default Config to parse the flags provided using os.Args.
+// This default Config uses a flag.FlagSet with its ErrorHandling set to flag.ExitOnError.
 func Parse(flags ...*Flag) error {
 	config := &Config{
 		FlagSet: flag.NewFlagSet(os.Args[0], flag.ExitOnError),
@@ -17,6 +19,8 @@ func Parse(flags ...*Flag) error {
 	return config.Parse(os.Args[1:])
 }
 
+// A Config represents a set of flags to be parsed. The flags are only set on the underlying
+// flag.FlagSet when Config.Parse is called.
 type Config struct {
 	FlagSet *flag.FlagSet
 
@@ -38,6 +42,9 @@ func (c *Config) setDefaultValues() {
 	c.defaultValuesSet = true
 }
 
+// Parse parses the arguments provided, along with the environment variables (using os.Getenv).
+// Flags parsed from the `arguments` take precedence over the environment variables.
+// The argument list provided should not include the command name.
 func (c *Config) Parse(arguments []string) error {
 	c.FlagSet.Usage = c.Usage
 
@@ -112,10 +119,12 @@ func (c *Config) handleMissingFlags() error {
 	return nil
 }
 
+// Arg proxies the .Arg method on the underlying flag.Flagset
 func (c *Config) Arg(i int) string {
 	return c.FlagSet.Arg(i)
 }
 
+// Args proxies the .Args method on the underlying flag.Flagset
 func (c *Config) Args() []string {
 	return c.FlagSet.Args()
 }
@@ -132,10 +141,11 @@ func (c *Config) handleError(err error) error {
 	return err
 }
 
+// Usage prints the usage for the flags to the output defined on the underlying flag.FlagSet.
 func (c *Config) Usage() {
 	c.setDefaultValues()
 
-	_, _ = fmt.Fprintf(c.FlagSet.Output(), "Usage of %s:\n", os.Args[0])
+	_, _ = fmt.Fprintf(c.FlagSet.Output(), "Usage of %s:\n", c.FlagSet.Name())
 	for _, f := range c.Flags {
 		if f.Name == "" && f.Env == "" {
 			continue

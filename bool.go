@@ -21,6 +21,7 @@ func (b *boolValue) IsBoolFlag() bool {
 	return true
 }
 
+// Bool creates a flag for a boolean variable.
 func Bool(v *bool, flag, env, usage string) *Flag {
 	return &Flag{
 		Value:    (*boolValue)(v),
@@ -31,6 +32,7 @@ func Bool(v *bool, flag, env, usage string) *Flag {
 	}
 }
 
+// BoolGenerator is the default boolean generator, to be used with Repeatable for boolean slices.
 func BoolGenerator() Generator {
 	return func() flag.Value {
 		return new(boolValue)

@@ -10,6 +10,9 @@ import (
 	"github.com/pkg/errors"
 )
 
+// A Generator is a function that returns new values of a type implementing flag.Value.
+// Generators are used with Repeatable to create a new value to be appended to the
+// target slice.
 type Generator func() flag.Value
 
 type sliceValue struct {
@@ -108,6 +111,8 @@ func (vs sliceValue) set(s string) error {
 	return nil
 }
 
+// Repeatable creates a flag that is repeatable. The variable `v` provided should be a pointer to a slice.
+// The Generator should generates values that are assignable to the slice's emlements type.
 func Repeatable(v interface{}, generator Generator, flag, env, usage string, validators ...validators.Var) *Flag {
 	return &Flag{
 		Value: sliceValue{
@@ -122,6 +127,7 @@ func Repeatable(v interface{}, generator Generator, flag, env, usage string, val
 	}
 }
 
+// MakeGenerator creates a Generator that will create values of the underlying type of `v`.
 func MakeGenerator(v flag.Value) Generator {
 	// TODO(yazgazan): This function will necessitate great examples
 	val := reflect.ValueOf(v)

@@ -40,6 +40,7 @@ func (i *uintValue) Set(s string) error {
 	return err
 }
 
+// Uint creates a flag for a uint variable.
 func Uint(v *uint, flag, env, usage string, validators ...validators.Uint) *Flag {
 	return &Flag{
 		Value: uintValidators{
@@ -53,6 +54,7 @@ func Uint(v *uint, flag, env, usage string, validators ...validators.Uint) *Flag
 	}
 }
 
+// UintGenerator is the default uint generator, to be used with Repeatable for uint slices.
 func UintGenerator() Generator {
 	return func() flag.Value {
 		return new(uintValue)

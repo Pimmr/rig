@@ -40,6 +40,7 @@ func (i *intValue) Set(s string) error {
 	return err
 }
 
+// Int creates a flag for a int variable.
 func Int(v *int, flag, env, usage string, validators ...validators.Int) *Flag {
 	return &Flag{
 		Value: intValidators{
@@ -53,6 +54,7 @@ func Int(v *int, flag, env, usage string, validators ...validators.Int) *Flag {
 	}
 }
 
+// IntGenerator is the default int generator, to be used with Repeatable for int slices.
 func IntGenerator() Generator {
 	return func() flag.Value {
 		return new(intValue)

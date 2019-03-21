@@ -35,6 +35,7 @@ func (s *stringValue) Set(val string) error {
 	return nil
 }
 
+// String creates a flag for a string variable.
 func String(v *string, flag, env, usage string, validators ...validators.String) *Flag {
 	return &Flag{
 		Value: stringValidators{
@@ -48,6 +49,7 @@ func String(v *string, flag, env, usage string, validators ...validators.String)
 	}
 }
 
+// StringGenerator is the default string generator, to be used with Repeatable for string slices.
 func StringGenerator() Generator {
 	return func() flag.Value {
 		return new(stringValue)

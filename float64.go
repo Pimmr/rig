@@ -40,6 +40,7 @@ func (f *float64Value) Set(s string) error {
 	return err
 }
 
+// Float64 creates a flag for a float64 variable.
 func Float64(v *float64, flag, env, usage string, validators ...validators.Float64) *Flag {
 	return &Flag{
 		Value: float64Validators{
@@ -53,6 +54,7 @@ func Float64(v *float64, flag, env, usage string, validators ...validators.Float
 	}
 }
 
+// Float64Generator is the default float64 generator, to be used with Repeatable for float64 slices.
 func Float64Generator() Generator {
 	return func() flag.Value {
 		return new(float64Value)

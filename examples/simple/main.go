@@ -35,17 +35,17 @@ func (d *countTheDotsValue) Set(s string) error {
 	return nil
 }
 
-func CountTheDots(v *uint, name, env, usage string) *rig.Flag {
+func countTheDots(v *uint, name, env, usage string) *rig.Flag {
 	return rig.TypeHint(
 		rig.Var(
 			(*countTheDotsValue)(v), name, env, usage,
-			VarToIntValidator(RangeValidator(1, 8)),
+			rarToIntValidator(rangeValidator(1, 8)),
 		),
 		"dotdotdot",
 	)
 }
 
-func RangeValidator(min, max int) validators.Int {
+func rangeValidator(min, max int) validators.Int {
 	return func(i int) error {
 		if i < min {
 			return fmt.Errorf("integer should be greater than %d", min)
@@ -58,7 +58,7 @@ func RangeValidator(min, max int) validators.Int {
 	}
 }
 
-func VarToIntValidator(validator validators.Int) validators.Var {
+func rarToIntValidator(validator validators.Int) validators.Var {
 	return func(v flag.Value) error {
 		i, ok := v.(*countTheDotsValue)
 		if !ok {
@@ -79,9 +79,9 @@ func main() {
 	)
 
 	err := rig.Parse(
-		rig.Required(rig.Int(&flagA, "flag-a", "FLAG_A", "flag A", RangeValidator(1, 667))),
+		rig.Required(rig.Int(&flagA, "flag-a", "FLAG_A", "flag A", rangeValidator(1, 667))),
 		rig.String(&flagB, "flag-b", "FLAG_B", ""),
-		CountTheDots(&flagC, "flag-c", "FLAG_C", "flag C"),
+		countTheDots(&flagC, "flag-c", "FLAG_C", "flag C"),
 		rig.Repeatable(&flagD, rig.StringGenerator(), "flag-d", "FLAG_D", "flag D"),
 		rig.Bool(&flagE, "flag-e", "FLAG_E", "flag E"),
 	)
