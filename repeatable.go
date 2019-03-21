@@ -125,7 +125,7 @@ func Repeatable(v interface{}, generator Generator, flag, env, usage string, val
 		Name:     flag,
 		Env:      env,
 		Usage:    usage,
-		TypeHint: reflect.Indirect(value).Type().String(),
+		TypeHint: strings.Replace(reflect.Indirect(value).Type().String(), "[]main.", "[]", 1),
 	}
 }
 
