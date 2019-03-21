@@ -5,8 +5,11 @@ import (
 	"net/url"
 )
 
+// A URL validator should return an error if the *url.URL provided is not considered valid, nil otherwise.
 type URL func(*url.URL) error
 
+// URLScheme creates a URL validator that fails when the url.URL does not use the scheme `scheme`.
+// The validator never fails of `scheme` is empty.
 func URLScheme(scheme string) URL {
 	if scheme == "" {
 		return func(*url.URL) error {
@@ -23,6 +26,8 @@ func URLScheme(scheme string) URL {
 	}
 }
 
+// URLExcludeScheme creates a URL validator that fails when the url.URL uses the scheme `scheme`.
+// The validator never fails of `scheme` is empty.
 func URLExcludeScheme(scheme string) URL {
 	if scheme == "" {
 		return func(*url.URL) error {

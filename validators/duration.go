@@ -5,8 +5,10 @@ import (
 	"time"
 )
 
+// A Duration validator should return an error if the time.Duration provided is not considered valid, nil otherwise.
 type Duration func(time.Duration) error
 
+// DurationRange creates a Duration validator that fails when the time.Duration is strictly less than `min` or strictly more than `max`.
 func DurationRange(min, max time.Duration) Duration {
 	return func(d time.Duration) error {
 		if d < min {
@@ -20,6 +22,7 @@ func DurationRange(min, max time.Duration) Duration {
 	}
 }
 
+// DurationMin creates a Duration validator that fails when the time.Duration is strictly less than `min`.
 func DurationMin(min time.Duration) Duration {
 	return func(d time.Duration) error {
 		if d < min {
@@ -30,6 +33,7 @@ func DurationMin(min time.Duration) Duration {
 	}
 }
 
+// DurationMax creates a Duration validator that fails when the time.Duration is strictly more than `max`.
 func DurationMax(max time.Duration) Duration {
 	return func(d time.Duration) error {
 		if d > max {
@@ -40,6 +44,7 @@ func DurationMax(max time.Duration) Duration {
 	}
 }
 
+// DurationRounded creates a Duration validator that fails when the time.Duration is not a multiple of `r`
 func DurationRounded(r time.Duration) Duration {
 	return func(d time.Duration) error {
 		if d.Round(r) != d {
