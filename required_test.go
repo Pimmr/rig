@@ -1,7 +1,6 @@
 package rig
 
 import (
-	"strings"
 	"testing"
 )
 
@@ -18,11 +17,6 @@ func TestRequired(t *testing.T) {
 		t.Errorf("Required(String(...)).Required = false, expected true")
 	}
 
-	expectedSuffix := ", required"
-	if !strings.HasSuffix(r.TypeHint, expectedSuffix) {
-		t.Errorf("Required(String(...)).TypeHint = %q, expected %q suffix", r.TypeHint, expectedSuffix)
-	}
-
 	f = Var(new(stringValue), "var-flag", "VAR_ENV", "testing Required on Var")
 	r = Required(f)
 
@@ -31,10 +25,5 @@ func TestRequired(t *testing.T) {
 	}
 	if !r.Required {
 		t.Errorf("Required(Var(...)).Required = false, expected true")
-	}
-
-	expected := "required"
-	if r.TypeHint != expected {
-		t.Errorf("Required(Var(...)).TypeHint = %q, expected %q", r.TypeHint, expected)
 	}
 }

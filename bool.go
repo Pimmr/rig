@@ -28,7 +28,7 @@ func Bool(v *bool, flag, env, usage string) *Flag {
 		Name:     flag,
 		Env:      env,
 		Usage:    usage,
-		TypeHint: "boolean",
+		TypeHint: "bool",
 	}
 }
 

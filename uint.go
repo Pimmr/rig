@@ -50,7 +50,7 @@ func Uint(v *uint, flag, env, usage string, validators ...validators.Uint) *Flag
 		Name:     flag,
 		Env:      env,
 		Usage:    usage,
-		TypeHint: "unsigned integer",
+		TypeHint: "uint",
 	}
 }
 

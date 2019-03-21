@@ -61,7 +61,7 @@ func Regexp(v **regexp.Regexp, flag, env, usage string, validators ...validators
 		Name:     flag,
 		Env:      env,
 		Usage:    usage,
-		TypeHint: "Regexp",
+		TypeHint: "regex",
 	}
 }
 

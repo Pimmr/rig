@@ -29,12 +29,12 @@ func main() {
 	)
 
 	err := rig.Parse(
-		rig.Required(rig.TypeHint(rig.Repeatable(
+		rig.Required(rig.Repeatable(
 			&flagA, rig.IntGenerator(), "flag-a", "FLAG_A", "flag A",
-		), "repeatable integer")),
-		rig.TypeHint(rig.Repeatable(&flagB, rig.StringGenerator(), "flag-b", "FLAG_B", "flag B"), "repeatable string"),
-		rig.TypeHint(rig.Repeatable(&flagC, rig.URLGenerator(), "flag-c", "FLAG_C", "flag C"), "repeatable URL"),
-		rig.TypeHint(rig.Repeatable(&flagD, rig.MakeGenerator(new(date)), "flag-d", "FLAG_D", "flag D (i.e 2006-01-02)"), "repeatable date"),
+		)),
+		rig.Repeatable(&flagB, rig.StringGenerator(), "flag-b", "FLAG_B", "flag B"),
+		rig.Repeatable(&flagC, rig.URLGenerator(), "flag-c", "FLAG_C", "flag C"),
+		rig.Repeatable(&flagD, rig.MakeGenerator(new(date)), "flag-d", "FLAG_D", "flag D (i.e 2006-01-02)"),
 	)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)

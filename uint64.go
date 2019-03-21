@@ -50,7 +50,7 @@ func Uint64(v *uint64, flag, env, usage string, validators ...validators.Uint64)
 		Name:     flag,
 		Env:      env,
 		Usage:    usage,
-		TypeHint: "unsigned 64 bit integer",
+		TypeHint: "uint64",
 	}
 }
 
