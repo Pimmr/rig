@@ -392,7 +392,7 @@ func TestHandleError(t *testing.T) {
 
 		err := cmd.Run()
 		if e, ok := err.(*exec.ExitError); !ok || e.Success() {
-			t.Errorf("expected proccess to exit with error, got Success instead")
+			t.Errorf("expected process to exit with error, got Success instead")
 		}
 
 		firstLine, err := buf.ReadString('\n')
