@@ -191,11 +191,11 @@ func (c *Config) flagUsage(f *Flag) []string {
 	line := []string{}
 	switch {
 	case f.Name != "" && f.Env != "":
-		line = append(line, flagUsageExample(f), f.Env+"=value")
+		line = append(line, flagUsageExample(f)+", "+f.Env+"=value")
 	case f.Name != "":
-		line = append(line, flagUsageExample(f), "")
+		line = append(line, flagUsageExample(f))
 	case f.Env != "":
-		line = append(line, "", f.Env+"=value")
+		line = append(line, f.Env+"=value")
 	}
 	if f.TypeHint != "" {
 		line = append(line, fmt.Sprintf("(%s)", f.TypeHint))
