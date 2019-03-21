@@ -83,7 +83,7 @@ func main() {
 		rig.String(&flagB, "flag-b", "FLAG_B", ""),
 		countTheDots(&flagC, "flag-c", "FLAG_C", "flag C"),
 		rig.Repeatable(&flagD, rig.StringGenerator(), "flag-d", "FLAG_D", "flag D"),
-		rig.Bool(&flagE, "flag-e", "FLAG_E", "flag E"),
+		rig.Bool(&flagE, "flag-e-extra-long", "FLAG_E_LONG", "flag E"),
 	)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)

@@ -109,7 +109,7 @@ func (c *Config) handleMissingFlags() error {
 			continue
 		}
 
-		_, _ = fmt.Fprintln(c.FlagSet.Output(), f.missingError())
+		fmt.Fprintln(c.FlagSet.Output(), f.missingError())
 		hasMissing = true
 	}
 	if hasMissing {
@@ -130,7 +130,7 @@ func (c *Config) Args() []string {
 }
 
 func (c *Config) handleError(err error) error {
-	_, _ = fmt.Fprintf(c.FlagSet.Output(), "%s\n", err)
+	fmt.Fprintf(c.FlagSet.Output(), "%s\n", err)
 	c.Usage()
 	switch c.FlagSet.ErrorHandling() {
 	case flag.ExitOnError:
@@ -145,41 +145,91 @@ func (c *Config) handleError(err error) error {
 func (c *Config) Usage() {
 	c.setDefaultValues()
 
-	_, _ = fmt.Fprintf(c.FlagSet.Output(), "Usage of %s:\n", c.FlagSet.Name())
+	fmt.Fprintf(c.FlagSet.Output(), "Usage of %s:\n", c.FlagSet.Name())
+	lines := make([][]string, 0, len(c.Flags))
 	for _, f := range c.Flags {
 		if f.Name == "" && f.Env == "" {
 			continue
 		}
 
-		c.flagUsage(f)
+		line := c.flagUsage(f)
+		lines = append(lines, line)
+	}
+
+	offsets := offsetsForLines(lines, 2, 4)
+
+	for _, line := range lines {
+		delta := 0
+		for i, col := range line {
+			for j := 0; j < offsets[i]-delta; j++ {
+				fmt.Fprint(c.FlagSet.Output(), " ")
+			}
+			fmt.Fprintf(c.FlagSet.Output(), "%s", col)
+			delta = len(col)
+		}
+		fmt.Fprintln(c.FlagSet.Output())
 	}
 }
 
-func (c *Config) flagUsage(f *Flag) {
+func offsetsForLines(lines [][]string, margin, sep int) []int {
+	offsets := []int{}
+	for _, line := range lines {
+		for i, col := range line {
+			if i >= len(offsets) {
+				offsets = append(offsets, len(col)+sep)
+			} else if len(col)+sep > offsets[i] {
+				offsets[i] = len(col) + sep
+			}
+		}
+	}
+	offsets = append([]int{margin}, offsets...)
+
+	return offsets
+}
+
+func (c *Config) flagUsage(f *Flag) []string {
+	line := []string{}
 	switch {
 	case f.Name != "" && f.Env != "":
-		_, _ = fmt.Fprintf(c.FlagSet.Output(), "  -%s value, %s=value", f.Name, f.Env)
+		line = append(line, flagUsageExample(f), f.Env+"=value")
 	case f.Name != "":
-		_, _ = fmt.Fprintf(c.FlagSet.Output(), "  -%s value", f.Name)
+		line = append(line, flagUsageExample(f), "")
 	case f.Env != "":
-		_, _ = fmt.Fprintf(c.FlagSet.Output(), "  %s=value", f.Env)
+		line = append(line, "", f.Env+"=value")
 	}
 	if f.TypeHint != "" {
-		_, _ = fmt.Fprintf(c.FlagSet.Output(), " (%s)", f.TypeHint)
+		line = append(line, fmt.Sprintf("(%s)", f.TypeHint))
+	} else {
+		line = append(line, "")
 	}
 
-	_, _ = fmt.Fprint(c.FlagSet.Output(), "\n")
-	c.flagUsageDoc(f)
+	usage := c.flagUsageDoc(f)
+	if usage != "" {
+		line = append(line, usage)
+	}
+
+	return line
 }
 
-func (c *Config) flagUsageDoc(f *Flag) {
-	if f.Usage != "" {
-		_, _ = fmt.Fprintf(c.FlagSet.Output(), "        %s", f.Usage)
-		if f.defaultValue != "" && !f.Required {
-			_, _ = fmt.Fprintf(c.FlagSet.Output(), " (default %q)", f.defaultValue)
-		}
-		_, _ = fmt.Fprint(c.FlagSet.Output(), "\n")
-	} else if f.defaultValue != "" && !f.Required {
-		_, _ = fmt.Fprintf(c.FlagSet.Output(), "        (default %q)\n", f.defaultValue)
+func flagUsageExample(f *Flag) string {
+	if f.IsBoolFlag() {
+		return fmt.Sprintf("-%s", f.Name)
 	}
+
+	return fmt.Sprintf("-%s value", f.Name)
+}
+
+func (c *Config) flagUsageDoc(f *Flag) string {
+	s := ""
+
+	if f.Usage != "" {
+		s += f.Usage
+		if f.defaultValue != "" && !f.Required {
+			s += fmt.Sprintf(" (default %q)", f.defaultValue)
+		}
+	} else if f.defaultValue != "" && !f.Required {
+		s += fmt.Sprintf("(default %q)", f.defaultValue)
+	}
+
+	return s
 }
