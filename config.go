@@ -201,11 +201,11 @@ func (c *Config) flagUsage(f *Flag) []string {
 	line := []string{}
 	switch {
 	case f.Name != "" && f.Env != "":
-		line = append(line, flagUsageExample(f, typ)+", "+f.Env+"="+typ)
+		line = append(line, flagUsageExample(f, typ), f.Env+"="+typ)
 	case f.Name != "":
-		line = append(line, flagUsageExample(f, typ))
+		line = append(line, flagUsageExample(f, typ), "")
 	case f.Env != "":
-		line = append(line, f.Env+"="+typ)
+		line = append(line, "", f.Env+"="+typ)
 	}
 
 	usage := c.flagUsageDoc(f)
