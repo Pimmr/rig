@@ -50,7 +50,7 @@ func Int(v *int, flag, env, usage string, validators ...validators.Int) *Flag {
 		Name:     flag,
 		Env:      env,
 		Usage:    usage,
-		TypeHint: "integer",
+		TypeHint: "int",
 	}
 }
 

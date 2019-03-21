@@ -50,7 +50,7 @@ func Int64(v *int64, flag, env, usage string, validators ...validators.Int64) *F
 		Name:     flag,
 		Env:      env,
 		Usage:    usage,
-		TypeHint: "64 bit integer",
+		TypeHint: "int64",
 	}
 }
 
