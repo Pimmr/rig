@@ -9,7 +9,7 @@ import (
 	"github.com/Pimmr/rig/validators"
 )
 
-func Palindrome(s string) error {
+func palindrome(s string) error {
 	for i, j := 0, len(s)-1; i < j; {
 		if s[i] != s[j] {
 			return fmt.Errorf("string should be a palindrome")
@@ -35,7 +35,7 @@ func main() {
 		rig.Float64(&flagB, "flag-b", "FLAG_B", "flag B", validators.Float64Range(0.4, 12.5)),
 		rig.String(
 			&flagC, "flag-c", "FLAG_C", "flag C",
-			validators.StringExcludeChars("bB"), validators.StringLengthMin(5), Palindrome),
+			validators.StringExcludeChars("bB"), validators.StringLengthMin(5), palindrome),
 		rig.Duration(&flagD, "flag-d", "FLAG_D", "flag D", validators.DurationRounded(10*time.Minute)),
 	)
 	if err != nil {

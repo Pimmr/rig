@@ -8,15 +8,15 @@ import (
 	"github.com/Pimmr/rig"
 )
 
-type Date time.Time
+type date time.Time
 
-func (d Date) String() string {
+func (d date) String() string {
 	return time.Time(d).Format("2006-01-02")
 }
 
-func (d *Date) Set(s string) error {
+func (d *date) Set(s string) error {
 	t, err := time.Parse("2006-01-02", s)
-	*d = Date(t)
+	*d = date(t)
 	return err
 }
 
@@ -25,7 +25,7 @@ func main() {
 		flagA []int
 		flagB []string
 		flagC []rig.URLValue
-		flagD []Date
+		flagD []date
 	)
 
 	err := rig.Parse(
@@ -34,7 +34,7 @@ func main() {
 		), "repeatable integer")),
 		rig.TypeHint(rig.Repeatable(&flagB, rig.StringGenerator(), "flag-b", "FLAG_B", "flag B"), "repeatable string"),
 		rig.TypeHint(rig.Repeatable(&flagC, rig.URLGenerator(), "flag-c", "FLAG_C", "flag C"), "repeatable URL"),
-		rig.TypeHint(rig.Repeatable(&flagD, rig.MakeGenerator(new(Date)), "flag-d", "FLAG_D", "flag D (i.e 2006-01-02)"), "repeatable date"),
+		rig.TypeHint(rig.Repeatable(&flagD, rig.MakeGenerator(new(date)), "flag-d", "FLAG_D", "flag D (i.e 2006-01-02)"), "repeatable date"),
 	)
 	if err != nil {
 		fmt.Printf("Error: %s\n", err)
