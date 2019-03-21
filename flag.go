@@ -6,6 +6,7 @@ import (
 	"github.com/pkg/errors"
 )
 
+// A Flag represents the state and definition of a flag.
 type Flag struct {
 	flag.Value
 	Name     string
@@ -22,6 +23,8 @@ type isBoolFlagger interface {
 	IsBoolFlag() bool
 }
 
+// Set proxies the .Set method on the underlying flag.Value. It is used to keep track
+// of wether a flag has been set or not.
 func (f *Flag) Set(v string) error {
 	err := f.Value.Set(v)
 	if err != nil {
@@ -32,6 +35,7 @@ func (f *Flag) Set(v string) error {
 	return nil
 }
 
+// IsBoolFlag proxies the .IsBoolFlag method on the underlying flag.Value, if defined.
 func (f *Flag) IsBoolFlag() bool {
 	if boolFlagger, ok := f.Value.(isBoolFlagger); ok {
 		return boolFlagger.IsBoolFlag()

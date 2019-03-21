@@ -40,6 +40,7 @@ func (i *int64Value) Set(s string) error {
 	return err
 }
 
+// Int64 creates a flag for a int64 variable.
 func Int64(v *int64, flag, env, usage string, validators ...validators.Int64) *Flag {
 	return &Flag{
 		Value: int64Validators{
@@ -53,6 +54,7 @@ func Int64(v *int64, flag, env, usage string, validators ...validators.Int64) *F
 	}
 }
 
+// Int64Generator is the default int64 generator, to be used with Repeatable for int64 slices.
 func Int64Generator() Generator {
 	return func() flag.Value {
 		return new(int64Value)

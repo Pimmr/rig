@@ -40,6 +40,7 @@ func (d *durationValue) Set(s string) error {
 	return err
 }
 
+// Duration creates a flag for a time.Duration variable.
 func Duration(v *time.Duration, flag, env, usage string, validators ...validators.Duration) *Flag {
 	return &Flag{
 		Value: durationValidators{
@@ -53,6 +54,7 @@ func Duration(v *time.Duration, flag, env, usage string, validators ...validator
 	}
 }
 
+// DurationGenerator is the default time.Duration generator, to be used with Repeatable for time.Duration slices.
 func DurationGenerator() Generator {
 	return func() flag.Value {
 		return new(durationValue)

@@ -27,6 +27,7 @@ func (v varValidators) Set(s string) error {
 	return nil
 }
 
+// Var creates a flag for a flag.Value variable.
 func Var(v flag.Value, flag, env, usage string, validators ...validators.Var) *Flag {
 	return &Flag{
 		Value: varValidators{

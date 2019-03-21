@@ -28,6 +28,8 @@ func (v urlValidators) Set(s string) error {
 	return nil
 }
 
+// A URLValue is a wrapper used to manipulate *url.URL flags.
+// When using Repeatable for *url.URL, the slice should be of type []URLValue
 type URLValue struct {
 	URL **url.URL
 }
@@ -40,12 +42,14 @@ func (u URLValue) String() string {
 	return (*u.URL).String()
 }
 
+// Set parses and sets the url represented by `s`
 func (u *URLValue) Set(s string) error {
 	v, err := url.Parse(s)
 	*u.URL = v
 	return err
 }
 
+// URL creates a flag for a *url.URL variable.
 func URL(v **url.URL, flag, env, usage string, validators ...validators.URL) *Flag {
 	return &Flag{
 		Value: urlValidators{
@@ -61,6 +65,8 @@ func URL(v **url.URL, flag, env, usage string, validators ...validators.URL) *Fl
 	}
 }
 
+// URLGenerator is the default *url.URL generator, to be used with Repeatable for url slices.
+// the slices type must be []URLValue for the generator to work
 func URLGenerator() Generator {
 	return func() flag.Value {
 		return &URLValue{
