@@ -10,47 +10,6 @@ import (
 	"time"
 )
 
-func TestParseBool(t *testing.T) {
-	for _, test := range []struct {
-		in          string
-		expected    bool
-		expectError bool
-	}{
-		{
-			in:          "",
-			expected:    false,
-			expectError: false,
-		},
-		{
-			in:          "true",
-			expected:    true,
-			expectError: false,
-		},
-		{
-			in:          "false",
-			expected:    false,
-			expectError: false,
-		},
-		{
-			in:          "notaboolean",
-			expected:    false,
-			expectError: true,
-		},
-	} {
-		got, err := parseBool(test.in)
-		if test.expectError && err == nil {
-			t.Errorf("parseBool(%q): expected error, got nil", test.in)
-		}
-		if !test.expectError && err != nil {
-			t.Errorf("parseBool(%q): unexpected error: %v", test.in, err)
-		}
-
-		if got != test.expected {
-			t.Errorf("parseBool(%q) = %v, expected %v", test.in, got, test.expected)
-		}
-	}
-}
-
 func TestApplyTypeHint(t *testing.T) {
 	for _, test := range []struct {
 		flag     Flag
@@ -397,7 +356,7 @@ func TestFlagFromInterface(t *testing.T) {
 func TestGetFieldInfo(t *testing.T) {
 	t.Run("valid ignore", func(t *testing.T) {
 		type validIgnore struct {
-			FlagA int `flag:"flag-a" ignore:"true"`
+			FlagA int `flag:"-"`
 		}
 		v := &validIgnore{}
 		val := reflect.Indirect(reflect.ValueOf(v))
@@ -415,9 +374,9 @@ func TestGetFieldInfo(t *testing.T) {
 		}
 	})
 
-	t.Run("invalid ignore", func(t *testing.T) {
+	t.Run("invalid flag option", func(t *testing.T) {
 		type invalidIgnore struct {
-			FlagA int `flag:"flag-a" ignore:"notaboolean"`
+			FlagA int `flag:"flag-a,foobar"`
 		}
 		v := &invalidIgnore{}
 		val := reflect.Indirect(reflect.ValueOf(v))
@@ -433,7 +392,7 @@ func TestGetFieldInfo(t *testing.T) {
 
 	t.Run("valid required", func(t *testing.T) {
 		type validRequired struct {
-			FlagA int `flag:"flag-a" required:"true"`
+			FlagA int `flag:"flag-a,require"`
 		}
 		v := &validRequired{}
 		val := reflect.Indirect(reflect.ValueOf(v))
@@ -455,9 +414,57 @@ func TestGetFieldInfo(t *testing.T) {
 		}
 	})
 
-	t.Run("invalid required", func(t *testing.T) {
+	t.Run("valid default", func(t *testing.T) {
+		type validDefault struct {
+			FlagA int
+		}
+		v := &validDefault{}
+		val := reflect.Indirect(reflect.ValueOf(v))
+		typ := val.Type()
+		fieldTyp, _ := typ.FieldByName("FlagA")
+		field := val.FieldByName("FlagA")
+
+		fi, err := getFieldInfo(field, fieldTyp)
+		if err != nil {
+			t.Errorf("getFieldInfo(%T): unexpected error: %v", v, err)
+			return
+		}
+		if fi == nil {
+			t.Errorf("getFieldInfo(%T) = nil, expected value", v)
+			return
+		}
+
+		if fi.flag != "flag-a" {
+			t.Errorf("getFieldInfo(%T).flag = %q, expected %q", v, fi.flag, "flag-a")
+		}
+		if fi.required {
+			t.Errorf("getFieldInfo(%T).required = true, expected false", v)
+		}
+	})
+
+	t.Run("invalid inline", func(t *testing.T) {
+		type invalidInline struct {
+			FlagA int `flag:",inline" env:",inline"`
+		}
+		v := &invalidInline{}
+		val := reflect.Indirect(reflect.ValueOf(v))
+		typ := val.Type()
+		fieldTyp, _ := typ.FieldByName("FlagA")
+		field := val.FieldByName("FlagA")
+
+		fi, err := getFieldInfo(field, fieldTyp)
+		if err != nil {
+			t.Errorf("getFieldInfo(%T): unexpected error: %v", v, err)
+			return
+		}
+		if fi != nil {
+			t.Errorf("getFieldInfo(%T) = %v, expected nil", v, fi)
+		}
+	})
+
+	t.Run("invalid env option", func(t *testing.T) {
 		type invalidRequired struct {
-			FlagA int `flag:"flag-a" required:"notaboolean"`
+			FlagA int `env:"FLAG_A,foobar"`
 		}
 		v := &invalidRequired{}
 		val := reflect.Indirect(reflect.ValueOf(v))
@@ -473,7 +480,7 @@ func TestGetFieldInfo(t *testing.T) {
 
 	t.Run("non-addressable field", func(t *testing.T) {
 		type nonAddressableField struct {
-			FlagA int `flag:"flag-a" required:"true"`
+			FlagA int `flag:"flag-a,require"`
 		}
 		v := nonAddressableField{}
 		val := reflect.Indirect(reflect.ValueOf(v))
@@ -486,26 +493,129 @@ func TestGetFieldInfo(t *testing.T) {
 			t.Errorf("getFieldInfo(%T): expected error, got nil", v)
 		}
 	})
+}
 
-	t.Run("field not a flag", func(t *testing.T) {
-		type fieldNotAFlag struct {
-			FlagA int
+func TestGetFlagName(t *testing.T) {
+	for _, test := range []struct {
+		Field string
+		Tag   string
+
+		// Expected:
+		FlagName string
+		Required bool
+		Error    bool
+	}{
+		{Field: "", Tag: "", FlagName: "", Required: false, Error: false},
+		{Field: "FooBar", Tag: "", FlagName: "foo-bar", Required: false, Error: false},
+		{Field: "FooBar", Tag: "bar-baz", FlagName: "bar-baz", Required: false, Error: false},
+		{Field: "FooBar", Tag: "bar-baz,require", FlagName: "bar-baz", Required: true, Error: false},
+		{Field: "FooBar", Tag: "bar-baz,inline", FlagName: "", Required: false, Error: false},
+		{Field: "FooBar", Tag: "bar-baz,inline,require", FlagName: "", Required: true, Error: false},
+		{Field: "FooBar", Tag: ",inline,require", FlagName: "", Required: true, Error: false},
+		{Field: "FooBar", Tag: ",require", FlagName: "foo-bar", Required: true, Error: false},
+		{Field: "FooBar", Tag: ",invalidoption", FlagName: "", Required: false, Error: true},
+		{Field: "FooBar", Tag: ",", FlagName: "", Required: false, Error: true},
+	} {
+		got, required, err := getFlagName(test.Field, test.Tag)
+		if test.Error && err == nil {
+			t.Errorf("getFlagName(%q, %q): expected error, got nil", test.Field, test.Tag)
+			continue
 		}
-		v := &fieldNotAFlag{}
-		val := reflect.Indirect(reflect.ValueOf(v))
-		typ := val.Type()
-		fieldTyp, _ := typ.FieldByName("FlagA")
-		field := val.FieldByName("FlagA")
-
-		fi, err := getFieldInfo(field, fieldTyp)
+		if !test.Error && err != nil {
+			t.Errorf("getFlagName(%q, %q): unexpected error: %v", test.Field, test.Tag, err)
+		}
 		if err != nil {
-			t.Errorf("getFieldInfo(%T): unexpected error: %v", v, err)
-			return
+			continue
 		}
-		if fi != nil {
-			t.Errorf("getFieldInfo(%T) = %+v, expected nil", v, fi)
+
+		if got != test.FlagName {
+			t.Errorf("getFlagName(%q, %q) = %q, expected %q", test.Field, test.Tag, got, test.FlagName)
 		}
-	})
+		if got != test.FlagName {
+			t.Errorf("getFlagName(%q, %q) required = %v, expected %v", test.Field, test.Tag, required, test.Required)
+		}
+	}
+}
+
+func TestGetEnvName(t *testing.T) {
+	for _, test := range []struct {
+		Field string
+		Tag   string
+
+		// Expected:
+		EnvName string
+		Error   bool
+	}{
+		{Field: "", Tag: "", EnvName: "", Error: false},
+		{Field: "FooBar", Tag: "", EnvName: "FOO_BAR", Error: false},
+		{Field: "FooBar", Tag: "BAR_BAZ", EnvName: "BAR_BAZ", Error: false},
+		{Field: "FooBar", Tag: "BAR_BAZ,inline", EnvName: "", Error: false},
+		{Field: "FooBar", Tag: ",invalidoption", EnvName: "", Error: true},
+		{Field: "FooBar", Tag: ",inline,inline", EnvName: "", Error: true},
+		{Field: "FooBar", Tag: ",", EnvName: "", Error: true},
+	} {
+		got, err := getEnvName(test.Field, test.Tag)
+		if test.Error && err == nil {
+			t.Errorf("getEnvName(%q, %q): expected error, got nil", test.Field, test.Tag)
+			continue
+		}
+		if !test.Error && err != nil {
+			t.Errorf("getEnvName(%q, %q): unexpected error: %v", test.Field, test.Tag, err)
+		}
+		if err != nil {
+			continue
+		}
+
+		if got != test.EnvName {
+			t.Errorf("getEnvName(%q, %q) = %q, expected %q", test.Field, test.Tag, got, test.EnvName)
+		}
+	}
+}
+
+func TestToSnakeCase(t *testing.T) {
+	sep := "-"
+
+	for _, test := range []struct {
+		In       string
+		Expected string
+	}{
+		{In: "", Expected: ""},
+		{In: "f", Expected: "f"},
+		{In: "foo", Expected: "foo"},
+		{In: "Foo", Expected: "foo"},
+		{In: "fooBar", Expected: "foo-bar"},
+		{In: "FooBar", Expected: "foo-bar"},
+		{In: "fooBarBaz", Expected: "foo-bar-baz"},
+		{In: "fooBARBaz", Expected: "foo-bar-baz"},
+	} {
+		got := toSnakeCase(test.In, sep)
+		if got != test.Expected {
+			t.Errorf("toSnakeCase(%q, %q) = %q, expected %q", test.In, sep, got, test.Expected)
+		}
+	}
+}
+
+func TestToUpperSnakeCase(t *testing.T) {
+	sep := "_"
+
+	for _, test := range []struct {
+		In       string
+		Expected string
+	}{
+		{In: "", Expected: ""},
+		{In: "F", Expected: "F"},
+		{In: "foo", Expected: "FOO"},
+		{In: "Foo", Expected: "FOO"},
+		{In: "fooBar", Expected: "FOO_BAR"},
+		{In: "FooBar", Expected: "FOO_BAR"},
+		{In: "fooBarBaz", Expected: "FOO_BAR_BAZ"},
+		{In: "fooBARBaz", Expected: "FOO_BAR_BAZ"},
+	} {
+		got := toUpperSnakeCase(test.In, sep)
+		if got != test.Expected {
+			t.Errorf("toUpperSnakeCase(%q, %q) = %q, expected %q", test.In, sep, got, test.Expected)
+		}
+	}
 }
 
 func TestStructToFlags(t *testing.T) {
@@ -518,9 +628,9 @@ func TestStructToFlags(t *testing.T) {
 		}
 	})
 
-	t.Run("invalid field", func(t *testing.T) {
+	t.Run("invalid flag option", func(t *testing.T) {
 		type invalidField struct {
-			FlagA int `flag:"flag-a" required:"notaboolean"`
+			FlagA int `flag:"flag-a,foobar"`
 		}
 		v := &invalidField{}
 
@@ -562,7 +672,7 @@ func TestStructToFlags(t *testing.T) {
 
 	t.Run("nested struct failing", func(t *testing.T) {
 		type invalidField struct {
-			FlagA int `flag:"flag-a" required:"notaboolean"`
+			FlagA int `flag:"flag-a,foobar"`
 		}
 		type nestedStructInvalidField struct {
 			SubA invalidField
@@ -574,12 +684,24 @@ func TestStructToFlags(t *testing.T) {
 			t.Errorf("StructToFlags(%T): expected error, got nil", v)
 		}
 	})
+
+	t.Run("ignored field", func(t *testing.T) {
+		type ignoredField struct {
+			FlagA int `flag:"-"`
+		}
+		v := &ignoredField{}
+
+		_, err := StructToFlags(v)
+		if err != nil {
+			t.Errorf("StructToFlags(%T): unexpected error: %v", v, err)
+		}
+	})
 }
 
 func TestParseStruct(t *testing.T) {
-	t.Run("invalid flags", func(t *testing.T) {
+	t.Run("invalid flag option", func(t *testing.T) {
 		type invalidField struct {
-			FlagA int `flag:"flag-a" required:"notaboolean"`
+			FlagA int `flag:"flag-a,foobar"`
 		}
 		v := &invalidField{}
 

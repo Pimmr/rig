@@ -7,18 +7,18 @@ import (
 )
 
 type bar struct {
-	FlagE int     `flag:"flag-e" env:"FLAG_E" usage:"Flag E"`
-	FlagF float64 `flag:"flag-f" env:"FLAG_F" usage:"Flag F"`
+	FlagE int     `usage:"Flag E"`
+	FlagF float64 `usage:"Flag F"`
 }
 
 type foo struct {
-	FlagA string         `flag:"flag-a" env:"FLAG_A" usage:"Flag A"`
-	FlagB int            `flag:"flag-b" env:"FLAG_B" usage:"Flag B" required:"true"`
-	FlagC []int          `flag:"flag-c" env:"FLAG_C" usage:"Flag C" typehint:"many ints"`
-	FlagD []rig.URLValue `flag:"flag-d" usage:"Flag D"`
-	Bar   bar            `flag:"bar" env:"BAR" required:"t"`
-	Baz   bar
-	Blah  bar `ignore:"true"`
+	FlagA string         `usage:"Flag A"`
+	FlagB int            `flag:",require" usage:"Flag B"`
+	FlagC []int          `usage:"Flag C" typehint:"many ints"`
+	FlagD []rig.URLValue `usage:"Flag D"`
+	Bar   bar            `flag:",require"`
+	Baz   bar            `flag:",inline" env:",inline"`
+	Blah  bar            `flag:"-"`
 }
 
 func main() {

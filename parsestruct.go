@@ -6,8 +6,9 @@ import (
 	"os"
 	"reflect"
 	"regexp"
-	"strconv"
+	"strings"
 	"time"
+	"unicode"
 
 	"github.com/pkg/errors"
 )
@@ -25,21 +26,15 @@ type fieldInfo struct {
 	isStruct bool
 }
 
-func parseBool(s string) (bool, error) {
-	if s == "" {
-		return false, nil
-	}
-
-	return strconv.ParseBool(s)
-}
-
 func getFieldInfo(field reflect.Value, typ reflect.StructField) (*fieldInfo, error) {
-	ignore, err := parseBool(typ.Tag.Get("ignore"))
-	if err != nil || ignore {
+	flagName, required, err := getFlagName(typ.Name, typ.Tag.Get("flag"))
+	if err != nil {
 		return nil, err
 	}
-
-	required, err := parseBool(typ.Tag.Get("required"))
+	if flagName == "-" {
+		return nil, nil
+	}
+	envName, err := getEnvName(typ.Name, typ.Tag.Get("env"))
 	if err != nil {
 		return nil, err
 	}
@@ -48,8 +43,8 @@ func getFieldInfo(field reflect.Value, typ reflect.StructField) (*fieldInfo, err
 		field: field,
 		typ:   typ,
 
-		flag:     typ.Tag.Get("flag"),
-		env:      typ.Tag.Get("env"),
+		flag:     flagName,
+		env:      envName,
 		usage:    typ.Tag.Get("usage"),
 		typeHint: typ.Tag.Get("typehint"),
 		required: required,
@@ -66,6 +61,99 @@ func getFieldInfo(field reflect.Value, typ reflect.StructField) (*fieldInfo, err
 	info.field = info.field.Addr()
 
 	return info, nil
+}
+
+const (
+	inlineOpt  = "inline"
+	requireOpt = "require"
+)
+
+func getFlagName(fieldName, tag string) (flagName string, required bool, err error) {
+	inline := false
+	tt := strings.Split(tag, ",")
+	if len(tt) > 0 {
+		flagName = tt[0]
+		tt = tt[1:]
+	}
+
+	for _, t := range tt {
+		if t == inlineOpt {
+			inline = true
+			flagName = ""
+			continue
+		}
+		if t == requireOpt {
+			required = true
+			continue
+		}
+
+		return flagName, required, errors.Errorf("unknown flag option %q", t)
+	}
+
+	if !inline && flagName == "" {
+		flagName = toSnakeCase(fieldName, "-")
+	}
+
+	return flagName, required, nil
+}
+
+func getEnvName(fieldName, tag string) (envName string, err error) {
+	tt := strings.Split(tag, ",")
+	if len(tt) > 0 {
+		envName = tt[0]
+		tt = tt[1:]
+	}
+	if len(tt) > 1 {
+		return envName, errors.Errorf("too many env options")
+	}
+	if len(tt) == 1 {
+		if tt[0] == inlineOpt {
+			return "", nil
+		}
+		return envName, errors.Errorf("unknown env option %q", tt[0])
+	}
+
+	if envName == "" {
+		envName = toUpperSnakeCase(fieldName, "_")
+	}
+
+	return envName, nil
+}
+
+func toSnakeCase(s, sep string) string {
+	ret := ""
+	prev := '\000'
+
+	rr := []rune(s)
+	for i, r := range rr {
+		if i != 0 && unicode.IsUpper(r) && unicode.IsLower(prev) {
+			ret += sep
+		} else if i != 0 && i != len(rr)-1 && unicode.IsUpper(r) && unicode.IsUpper(prev) && unicode.IsLower(rr[i+1]) {
+			ret += sep
+		}
+		prev = r
+		ret += string(unicode.ToLower(r))
+	}
+
+	return ret
+}
+
+func toUpperSnakeCase(s, sep string) string {
+	ret := ""
+	prev := '\000'
+
+	rr := []rune(s)
+	for i, r := range rr {
+		if i != 0 && unicode.IsUpper(r) && unicode.IsLower(prev) {
+			ret += sep
+		} else if i != 0 && i != len(rr)-1 && unicode.IsUpper(r) && unicode.IsUpper(prev) && unicode.IsLower(rr[i+1]) {
+			ret += sep
+		}
+		prev = r
+		ret += string(unicode.ToUpper(r))
+	}
+
+	return ret
 }
 
 func ParseStruct(v interface{}, additionalFlags ...*Flag) error {
