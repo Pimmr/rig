@@ -1,6 +1,7 @@
 simple
 example-repeatable
 example-validators
+example-struct
 
 !/examples/**
 
