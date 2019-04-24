@@ -483,7 +483,7 @@ func TestConfigUsage(t *testing.T) {
 	c := &Config{
 		FlagSet: flag.NewFlagSet("flagset", flag.ContinueOnError),
 		Flags: []*Flag{
-			String(&s, stringFlag, "", ""),
+			TypeHint(String(&s, stringFlag, "", ""), ""),
 			Int(&i, "", intEnv, intUsage),
 			Required(Bool(&b, boolFlag, boolEnv, boolUsage)),
 			Float64(&f, "", "", "no flag or env set for this one"),
