@@ -156,6 +156,9 @@ func toUpperSnakeCase(s, sep string) string {
 	return ret
 }
 
+// ParseStruct uses a default Config to parse the flages provided using os.Args.
+// StructtoFlags is used to generate the flags. the additionalFlags are applied after
+// the flags derived from the provided struct.
 func ParseStruct(v interface{}, additionalFlags ...*Flag) error {
 	flags, err := StructToFlags(v)
 	if err != nil {
@@ -172,6 +175,16 @@ func ParseStruct(v interface{}, additionalFlags ...*Flag) error {
 	return config.Parse(os.Args[1:])
 }
 
+// StructToFlags generates a set of Flag based on the provided struct.
+//
+// StructToFlags recognizes four struct flags: `flag`, `env`, `typehint` and `usage`.
+// The flag and env names are inferred based on the field name unless values are provided in
+// the struct tags.
+// The field names are transformed from CamelCase to snake_case (using `-` as a separator for the flag).
+//
+// Additional options `inline` and `require` can be specified in the struct tags (`require` should be specified on the `flag` tag).
+//
+// A flag or env can be marked as ignored by using `flag:"-"` and `env:"-"` respectively
 func StructToFlags(v interface{}) ([]*Flag, error) {
 	val := reflect.Indirect(reflect.ValueOf(v))
 	if val.Kind() != reflect.Struct {
