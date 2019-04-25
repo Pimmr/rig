@@ -13,6 +13,13 @@ import (
 	"github.com/pkg/errors"
 )
 
+func testingFlagset() *flag.FlagSet {
+	f := flag.NewFlagSet("rig-test", flag.ContinueOnError)
+	f.SetOutput(os.Stdout)
+
+	return f
+}
+
 // commandLineFlags get flags from the command line. Parse and ParseStruct uses os.Args, so we need to copy `go test`'s flags to avoid errors on -test.* args
 func commandLineFlags(t *testing.T) []*Flag {
 	t.Helper()

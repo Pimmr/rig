@@ -1,7 +1,7 @@
 package rig
 
 import (
-	"flag"
+	"net/url"
 	"reflect"
 	"regexp"
 	"strings"
@@ -125,8 +125,8 @@ func TestRepeatable(t *testing.T) {
 		}
 	})
 
-	testValidator := func(shouldFail bool) validators.Var {
-		return func(flag.Value) error {
+	testValidator := func(shouldFail bool) validators.Repeatable {
+		return func(interface{}) error {
 			if shouldFail {
 				return errors.New("failing validator")
 			}
@@ -195,7 +195,7 @@ func TestRepeatable(t *testing.T) {
 	})
 
 	t.Run("URL", func(t *testing.T) {
-		var uu []URLValue
+		var uu []*url.URL
 
 		f := Repeatable(&uu, URLGenerator(), "flag", "ENV", "testing Repeatable URLs")
 		in1 := "http://example.com/foo"
@@ -211,21 +211,14 @@ func TestRepeatable(t *testing.T) {
 
 		in1URL := urlMustParse(in1)
 		in2URL := urlMustParse(in2)
-		expected := []URLValue{
-			{
-				URL: &in1URL,
-			},
-			{
-				URL: &in2URL,
-			},
-		}
+		expected := []*url.URL{in1URL, in2URL}
 		if !reflect.DeepEqual(uu, expected) {
 			t.Errorf("Repeatable(&[]URLValue).Set(...) = %q, expected %q", uu, expected)
 		}
 	})
 
 	t.Run("Regexp", func(t *testing.T) {
-		var rr []RegexpValue
+		var rr []*regexp.Regexp
 
 		f := Repeatable(&rr, RegexpGenerator(), "flag", "ENV", "testing Repeatable Regexps")
 		in1 := "[a-d][0-7]+"
@@ -241,14 +234,7 @@ func TestRepeatable(t *testing.T) {
 
 		in1Regexp := regexp.MustCompile(in1)
 		in2Regexp := regexp.MustCompile(in2)
-		expected := []RegexpValue{
-			{
-				Regexp: &in1Regexp,
-			},
-			{
-				Regexp: &in2Regexp,
-			},
-		}
+		expected := []*regexp.Regexp{in1Regexp, in2Regexp}
 		if !reflect.DeepEqual(rr, expected) {
 			t.Errorf("Repeatable(&[]RegexpValue).Set(...) = %q, expected %q", rr, expected)
 		}

@@ -168,7 +168,7 @@ func ParseStruct(v interface{}, additionalFlags ...*Flag) error {
 	flags = append(flags, additionalFlags...)
 
 	config := &Config{
-		FlagSet: flag.NewFlagSet(os.Args[0], flag.ExitOnError),
+		FlagSet: DefaultFlagSet(),
 		Flags:   flags,
 	}
 
@@ -300,9 +300,9 @@ func flagFromInterface(i interface{}, flagName, env, usage string) (*Flag, error
 		return Repeatable(t, DurationGenerator(), flagName, env, usage), nil
 	case *[]float64:
 		return Repeatable(t, Float64Generator(), flagName, env, usage), nil
-	case *[]RegexpValue:
+	case *[]*regexp.Regexp:
 		return Repeatable(t, RegexpGenerator(), flagName, env, usage), nil
-	case *[]URLValue:
+	case *[]*url.URL:
 		return Repeatable(t, URLGenerator(), flagName, env, usage), nil
 	}
 }

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 
 	"github.com/Pimmr/rig"
 )
@@ -12,13 +13,13 @@ type bar struct {
 }
 
 type foo struct {
-	FlagA string         `usage:"Flag A"`
-	FlagB int            `flag:",require" usage:"Flag B"`
-	FlagC []int          `usage:"Flag C" typehint:"many ints"`
-	FlagD []rig.URLValue `usage:"Flag D"`
-	Bar   bar            `flag:",require"`
-	Baz   bar            `flag:",inline" env:",inline"`
-	Blah  bar            `flag:"-"`
+	FlagA string     `usage:"Flag A"`
+	FlagB int        `flag:",require" usage:"Flag B"`
+	FlagC []int      `usage:"Flag C" typehint:"many ints"`
+	FlagD []*url.URL `usage:"Flag D"`
+	Bar   bar        `flag:",require"`
+	Baz   bar        `flag:",inline" env:",inline"`
+	Blah  bar        `flag:"-"`
 }
 
 func main() {

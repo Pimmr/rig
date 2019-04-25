@@ -316,13 +316,13 @@ func TestFlagFromInterface(t *testing.T) {
 			},
 			{
 				test:     "[]regexp",
-				in:       new([]RegexpValue),
-				expected: Repeatable(new([]RegexpValue), RegexpGenerator(), flagName, envName, usage),
+				in:       new([]*regexp.Regexp),
+				expected: Repeatable(new([]*regexp.Regexp), RegexpGenerator(), flagName, envName, usage),
 			},
 			{
 				test:     "[]url",
-				in:       new([]URLValue),
-				expected: Repeatable(new([]URLValue), URLGenerator(), flagName, envName, usage),
+				in:       new([]*url.URL),
+				expected: Repeatable(new([]*url.URL), URLGenerator(), flagName, envName, usage),
 			},
 		} {
 			f, err := flagFromInterface(test.in, flagName, envName, usage)

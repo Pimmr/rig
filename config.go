@@ -13,11 +13,16 @@ import (
 // This default Config uses a flag.FlagSet with its ErrorHandling set to flag.ExitOnError.
 func Parse(flags ...*Flag) error {
 	config := &Config{
-		FlagSet: flag.NewFlagSet(os.Args[0], flag.ExitOnError),
+		FlagSet: DefaultFlagSet(),
 		Flags:   flags,
 	}
 
 	return config.Parse(os.Args[1:])
+}
+
+// DefaultFlagSet returns the default FlagSet used by the Parse and ParseStruct functions.
+func DefaultFlagSet() *flag.FlagSet {
+	return flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 }
 
 // A Config represents a set of flags to be parsed. The flags are only set on the underlying
