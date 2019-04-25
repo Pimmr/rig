@@ -1,6 +1,8 @@
 package rig
 
 import (
+	"flag"
+	"fmt"
 	"net/url"
 	"os"
 	"reflect"
@@ -734,4 +736,64 @@ func TestParseStruct(t *testing.T) {
 			t.Errorf("ParseStruct(%T).FlagA = %d, expected %d", v, v.FlagA, expected)
 		}
 	})
+}
+
+func ExampleParseStruct() {
+	type Configuration struct {
+		URL      *url.URL `flag:",required"`
+		Strings  []string
+		Bool     bool `flag:"boolean" env:"BOOLEAN" usage:"a boolean flag"`
+		Timeouts struct {
+			ReadTimeout  time.Duration
+			WriteTimeout time.Duration
+		} `flag:",inline" env:",inline"`
+
+		IgnoreMe float64 `flag:"-"`
+	}
+
+	conf := Configuration{}
+
+	err := ParseStruct(&conf)
+	if err != nil {
+		return
+	}
+}
+
+func ExampleStructToFlags() {
+	type Configuration struct {
+		URL      *url.URL `flag:",require"`
+		Strings  []string
+		Bool     bool `flag:"boolean" env:"BOOLEAN" usage:"a boolean flag"`
+		Timeouts struct {
+			ReadTimeout  time.Duration
+			WriteTimeout time.Duration
+		} `flag:",inline" env:",inline"`
+
+		IgnoreMe float64 `flag:"-"`
+	}
+
+	conf := Configuration{}
+
+	flags, err := StructToFlags(&conf)
+	if err != nil {
+		fmt.Printf("Error: %v\n", err)
+		return
+	}
+
+	c := &Config{
+		FlagSet: flag.NewFlagSet("test-rig", flag.ContinueOnError),
+		Flags:   flags,
+	}
+	c.FlagSet.SetOutput(os.Stdout)
+
+	c.Usage()
+
+	// Output:
+	// Usage of test-rig:
+	//   -url URL                   URL=URL                   (required)
+	//   -strings []string          STRINGS=[]string          (default "[]")
+	//   -boolean                   BOOLEAN=bool              a boolean flag (default "false")
+	//   -read-timeout duration     READ_TIMEOUT=duration     (default "0s")
+	//   -write-timeout duration    WRITE_TIMEOUT=duration    (default "0s")
+
 }
