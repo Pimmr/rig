@@ -740,7 +740,7 @@ func TestParseStruct(t *testing.T) {
 
 func ExampleParseStruct() {
 	type Configuration struct {
-		URL      *url.URL `flag:",required"`
+		URL      *url.URL `flag:",required" typehint:"website_url"`
 		Strings  []string
 		Bool     bool `flag:"boolean" env:"BOOLEAN" usage:"a boolean flag"`
 		Timeouts struct {
@@ -761,7 +761,7 @@ func ExampleParseStruct() {
 
 func ExampleStructToFlags() {
 	type Configuration struct {
-		URL      *url.URL `flag:",require"`
+		URL      *url.URL `flag:",require" typehint:"website_url"`
 		Strings  []string
 		Bool     bool `flag:"boolean" env:"BOOLEAN" usage:"a boolean flag"`
 		Timeouts struct {
@@ -790,7 +790,7 @@ func ExampleStructToFlags() {
 
 	// Output:
 	// Usage of test-rig:
-	//   -url URL                   URL=URL                   (required)
+	//   -url website_url           URL=website_url           (required)
 	//   -strings []string          STRINGS=[]string          (default "[]")
 	//   -boolean                   BOOLEAN=bool              a boolean flag (default "false")
 	//   -read-timeout duration     READ_TIMEOUT=duration     (default "0s")
