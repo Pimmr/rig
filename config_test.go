@@ -3,13 +3,16 @@ package rig
 import (
 	"bytes"
 	"flag"
+	"fmt"
 	"io/ioutil"
 	"os"
 	"os/exec"
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/Pimmr/rig/validators"
 	"github.com/pkg/errors"
 )
 
@@ -517,4 +520,47 @@ func TestConfigUsage(t *testing.T) {
 			t.Errorf("c.Usage() output: expected to find %q", s)
 		}
 	}
+}
+
+func ExampleParse() {
+	var ss []string
+	var timeout time.Duration
+	var f float64
+
+	err := Parse(
+		Repeatable(&ss, StringGenerator(), "strings", "STRINGS", "repeatable strings flag", validators.ToRepeatable(validators.StringLengthMin(2))),
+		Duration(&timeout, "timeout", "TIMEOUT", "duration flag"),
+		Float64(&f, "float64", "FLOAT64", "float64 flag", validators.Float64Max(1.4), validators.Float64Max(3.2)),
+	)
+	if err != nil {
+		os.Exit(2)
+	}
+}
+
+func ExampleConfig_Parse() {
+	var ss []string
+	var timeout time.Duration
+	var f float64
+
+	c := &Config{
+		FlagSet: flag.NewFlagSet(os.Args[0], flag.ContinueOnError),
+		Flags: []*Flag{
+			Repeatable(&ss, StringGenerator(), "strings", "STRINGS", "repeatable strings flag", validators.ToRepeatable(validators.StringLengthMin(2))),
+			Duration(&timeout, "timeout", "TIMEOUT", "duration flag"),
+			Float64(&f, "float64", "FLOAT64", "float64 flag", validators.Float64Min(1.4), validators.Float64Max(3.2)),
+		},
+	}
+	err := c.Parse([]string{"-strings=foo,bar", "-timeout=1h20s", "-float64=2.1"})
+	if err != nil {
+		os.Exit(2)
+	}
+
+	fmt.Printf("ss: %q\n", ss)
+	fmt.Printf("timeout: %v\n", timeout)
+	fmt.Printf("f: %.2f\n", f)
+
+	// Output:
+	// ss: ["foo" "bar"]
+	// timeout: 1h0m20s
+	// f: 2.10
 }
