@@ -1,6 +1,7 @@
 package rig
 
 import (
+	"fmt"
 	"net/url"
 	"testing"
 
@@ -39,7 +40,7 @@ func TestURLValue(t *testing.T) {
 	} {
 		v := &url.URL{}
 		*v = *test.value
-		d := URLValue{URL: &v}
+		d := urlValue{URL: &v}
 
 		if d.String() != test.expectedString {
 			t.Errorf("URL(&%s).String() = %q, expected %q", test.value, d, test.expectedString)
@@ -167,7 +168,7 @@ func TestURLValidators(t *testing.T) {
 func TestURLGenerator(t *testing.T) {
 	g := URLGenerator()
 	d := g()
-	u, ok := d.(*URLValue)
+	u, ok := d.(*urlValue)
 	if !ok {
 		t.Errorf("URLGenerator(): expected type *URLValue, got %T instead", d)
 	}
@@ -181,4 +182,24 @@ func TestURLGenerator(t *testing.T) {
 	if (*u.URL).String() != in {
 		t.Errorf("URLGenerator()().Set(%q) = %q, expected %q", in, (*u.URL).String(), in)
 	}
+}
+
+func ExampleURLGenerator() {
+	var uu []*url.URL
+
+	c := &Config{
+		FlagSet: testingFlagset(),
+		Flags: []*Flag{
+			Repeatable(&uu, URLGenerator(), "url", "URL", "Repeatable url flag"),
+		},
+	}
+
+	err := c.Parse([]string{"-url=https://example.com", "-url=https://cally.com"})
+	if err != nil {
+		return
+	}
+
+	fmt.Printf("%v\n", uu)
+
+	// Output: [https://example.com https://cally.com]
 }

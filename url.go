@@ -8,18 +8,18 @@ import (
 )
 
 type urlValidators struct {
-	*URLValue
+	*urlValue
 	validators []validators.URL
 }
 
 func (v urlValidators) Set(s string) error {
-	err := v.URLValue.Set(s)
+	err := v.urlValue.Set(s)
 	if err != nil {
 		return err
 	}
 
 	for _, validator := range v.validators {
-		err = validator(*v.URLValue.URL)
+		err = validator(*v.urlValue.URL)
 		if err != nil {
 			return err
 		}
@@ -28,13 +28,13 @@ func (v urlValidators) Set(s string) error {
 	return nil
 }
 
-// A URLValue is a wrapper used to manipulate *url.URL flags.
-// When using Repeatable for *url.URL, the slice should be of type []URLValue
-type URLValue struct {
+// A urlValue is a wrapper used to manipulate *url.URL flags.
+// When using Repeatable for *url.URL, the slice should be of type []urlValue
+type urlValue struct {
 	URL **url.URL
 }
 
-func (u URLValue) String() string {
+func (u urlValue) String() string {
 	if *u.URL == nil {
 		return ""
 	}
@@ -43,17 +43,21 @@ func (u URLValue) String() string {
 }
 
 // Set parses and sets the url represented by `s`
-func (u *URLValue) Set(s string) error {
+func (u *urlValue) Set(s string) error {
 	v, err := url.Parse(s)
 	*u.URL = v
 	return err
+}
+
+func (u *urlValue) Value() interface{} {
+	return u.URL
 }
 
 // URL creates a flag for a *url.URL variable.
 func URL(v **url.URL, flag, env, usage string, validators ...validators.URL) *Flag {
 	return &Flag{
 		Value: urlValidators{
-			URLValue: &URLValue{
+			urlValue: &urlValue{
 				URL: v,
 			},
 			validators: validators,
@@ -66,10 +70,10 @@ func URL(v **url.URL, flag, env, usage string, validators ...validators.URL) *Fl
 }
 
 // URLGenerator is the default *url.URL generator, to be used with Repeatable for url slices.
-// the slices type must be []URLValue for the generator to work
+// the slices type must be []urlValue for the generator to work
 func URLGenerator() Generator {
 	return func() flag.Value {
-		return &URLValue{
+		return &urlValue{
 			URL: new(*url.URL),
 		}
 	}

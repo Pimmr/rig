@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"time"
 
@@ -24,7 +25,7 @@ func main() {
 	var (
 		flagA []int
 		flagB []string
-		flagC []rig.URLValue
+		flagC []*url.URL
 		flagD []date
 	)
 

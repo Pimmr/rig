@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strconv"
+	"strings"
+	"unicode"
 
 	"github.com/pkg/errors"
 )
@@ -13,11 +16,16 @@ import (
 // This default Config uses a flag.FlagSet with its ErrorHandling set to flag.ExitOnError.
 func Parse(flags ...*Flag) error {
 	config := &Config{
-		FlagSet: flag.NewFlagSet(os.Args[0], flag.ExitOnError),
+		FlagSet: DefaultFlagSet(),
 		Flags:   flags,
 	}
 
 	return config.Parse(os.Args[1:])
+}
+
+// DefaultFlagSet returns the default FlagSet used by the Parse and ParseStruct functions.
+func DefaultFlagSet() *flag.FlagSet {
+	return flag.NewFlagSet(os.Args[0], flag.ExitOnError)
 }
 
 // A Config represents a set of flags to be parsed. The flags are only set on the underlying
@@ -201,11 +209,11 @@ func (c *Config) flagUsage(f *Flag) []string {
 	line := []string{}
 	switch {
 	case f.Name != "" && f.Env != "":
-		line = append(line, flagUsageExample(f, typ), f.Env+"="+typ)
+		line = append(line, flagUsageExample(f, typ), f.Env+"="+formatTypeHint(typ))
 	case f.Name != "":
 		line = append(line, flagUsageExample(f, typ), "")
 	case f.Env != "":
-		line = append(line, "", f.Env+"="+typ)
+		line = append(line, "", f.Env+"="+formatTypeHint(typ))
 	}
 
 	usage := c.flagUsageDoc(f)
@@ -216,12 +224,20 @@ func (c *Config) flagUsage(f *Flag) []string {
 	return line
 }
 
+func formatTypeHint(typ string) string {
+	if strings.IndexFunc(typ, unicode.IsSpace) == -1 {
+		return typ
+	}
+
+	return strconv.Quote(typ)
+}
+
 func flagUsageExample(f *Flag, typ string) string {
 	if f.IsBoolFlag() {
 		return fmt.Sprintf("-%s", f.Name)
 	}
 
-	return fmt.Sprintf("-%s %s", f.Name, typ)
+	return fmt.Sprintf("-%s %s", f.Name, formatTypeHint(typ))
 }
 
 func (c *Config) flagUsageDoc(f *Flag) string {

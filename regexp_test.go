@@ -1,6 +1,7 @@
 package rig
 
 import (
+	"fmt"
 	"regexp"
 	"testing"
 
@@ -29,7 +30,7 @@ func TestRegexpValue(t *testing.T) {
 		},
 	} {
 		v := test.value.Copy()
-		d := RegexpValue{Regexp: &v}
+		d := regexpValue{Regexp: &v}
 
 		if d.String() != test.expectedString {
 			t.Errorf("Regexp(&%s).String() = %q, expected %q", test.value, d, test.expectedString)
@@ -157,7 +158,7 @@ func TestRegexpValidators(t *testing.T) {
 func TestRegexpGenerator(t *testing.T) {
 	g := RegexpGenerator()
 	d := g()
-	r, ok := d.(*RegexpValue)
+	r, ok := d.(*regexpValue)
 	if !ok {
 		t.Errorf("RegexpGenerator(): expected type *RegexpValue, got %T instead", d)
 	}
@@ -171,4 +172,24 @@ func TestRegexpGenerator(t *testing.T) {
 	if (*r.Regexp).String() != in {
 		t.Errorf("RegexpGenerator()().Set(%q) = %q, expected %q", in, (*r.Regexp).String(), in)
 	}
+}
+
+func ExampleRegexpGenerator() {
+	var rr []*regexp.Regexp
+
+	c := &Config{
+		FlagSet: testingFlagset(),
+		Flags: []*Flag{
+			Repeatable(&rr, RegexpGenerator(), "regexp", "REGEXP", "Repeatable regexp flag"),
+		},
+	}
+
+	err := c.Parse([]string{"-regexp=^foo.*", "-regexp=[0-9]bar{1,5}"})
+	if err != nil {
+		return
+	}
+
+	fmt.Printf("%v\n", rr)
+
+	// Output: [^foo.* [0-9]bar{1 5}]
 }

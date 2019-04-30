@@ -8,18 +8,18 @@ import (
 )
 
 type regexpValidators struct {
-	*RegexpValue
+	*regexpValue
 	validators []validators.Regexp
 }
 
 func (v regexpValidators) Set(s string) error {
-	err := v.RegexpValue.Set(s)
+	err := v.regexpValue.Set(s)
 	if err != nil {
 		return err
 	}
 
 	for _, validator := range v.validators {
-		err = validator(*v.RegexpValue.Regexp)
+		err = validator(*v.regexpValue.Regexp)
 		if err != nil {
 			return err
 		}
@@ -28,13 +28,13 @@ func (v regexpValidators) Set(s string) error {
 	return nil
 }
 
-// A RegexpValue is a wrapper used to manipulate *regexp.Regexp flags.
-// When using Repeatable for *regexp.Regexp, the slice should be of type []RegexpValue
-type RegexpValue struct {
+// A regexpValue is a wrapper used to manipulate *regexp.Regexp flags.
+// When using Repeatable for *regexp.Regexp, the slice should be of type []regexpValue
+type regexpValue struct {
 	Regexp **regexp.Regexp
 }
 
-func (r RegexpValue) String() string {
+func (r regexpValue) String() string {
 	if *r.Regexp == nil {
 		return ""
 	}
@@ -42,18 +42,22 @@ func (r RegexpValue) String() string {
 }
 
 // Set compiles and sets the regexp represented by `s`
-func (r *RegexpValue) Set(s string) error {
+func (r *regexpValue) Set(s string) error {
 	var err error
 
 	*r.Regexp, err = regexp.Compile(s)
 	return err
 }
 
+func (r regexpValue) Value() interface{} {
+	return r.Regexp
+}
+
 // Regexp creates a flag for a *regexp.Regexp variable.
 func Regexp(v **regexp.Regexp, flag, env, usage string, validators ...validators.Regexp) *Flag {
 	return &Flag{
 		Value: regexpValidators{
-			RegexpValue: &RegexpValue{
+			regexpValue: &regexpValue{
 				Regexp: v,
 			},
 			validators: validators,
@@ -66,10 +70,9 @@ func Regexp(v **regexp.Regexp, flag, env, usage string, validators ...validators
 }
 
 // RegexpGenerator is the default *regexp.Regexp generator, to be used with Repeatable for regexp slices.
-// the slices type must be []RegexpValue for the generator to work
 func RegexpGenerator() Generator {
 	return func() flag.Value {
-		return &RegexpValue{
+		return &regexpValue{
 			Regexp: new(*regexp.Regexp),
 		}
 	}

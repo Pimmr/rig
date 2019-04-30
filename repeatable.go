@@ -15,10 +15,14 @@ import (
 // target slice.
 type Generator func() flag.Value
 
+type valuer interface {
+	Value() interface{}
+}
+
 type sliceValue struct {
 	value      reflect.Value
 	generator  Generator
-	validators []validators.Var
+	validators []validators.Repeatable
 }
 
 func (vs sliceValue) String() string {
@@ -94,14 +98,19 @@ func (vs sliceValue) set(s string) error {
 		return err
 	}
 
+	vi := interface{}(v)
+	if valuer, ok := v.(valuer); ok {
+		vi = valuer.Value()
+	}
+
 	for _, validator := range vs.validators {
-		err = validator(v)
+		err = validator(vi)
 		if err != nil {
 			return err
 		}
 	}
 
-	vv := reflect.Indirect(reflect.ValueOf(v))
+	vv := reflect.Indirect(reflect.ValueOf(vi))
 	if !vv.Type().ConvertibleTo(ind.Type().Elem()) {
 		return errors.Errorf("type %s cannot be converted to %s", vv.Type(), ind.Type().Elem())
 	}
@@ -113,7 +122,7 @@ func (vs sliceValue) set(s string) error {
 
 // Repeatable creates a flag that is repeatable. The variable `v` provided should be a pointer to a slice.
 // The Generator should generates values that are assignable to the slice's emlements type.
-func Repeatable(v interface{}, generator Generator, flag, env, usage string, validators ...validators.Var) *Flag {
+func Repeatable(v interface{}, generator Generator, flag, env, usage string, validators ...validators.Repeatable) *Flag {
 	value := reflect.ValueOf(v)
 
 	return &Flag{

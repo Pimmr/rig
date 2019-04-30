@@ -13,3 +13,21 @@ func TestTypeHint(t *testing.T) {
 		t.Errorf("TypeHint(String(...)).TypeHint = %q, expected %q", h.TypeHint, typeHint)
 	}
 }
+
+func ExampleTypeHint() {
+	var s string
+
+	c := &Config{
+		FlagSet: testingFlagset(),
+		Flags: []*Flag{
+			// This will overwrite the default "string" typehint in the usage
+			TypeHint(String(&s, "contact", "CONTACT", "Administrative contact"), "email address"),
+		},
+	}
+
+	c.Usage()
+
+	// Output:
+	// Usage of rig-test:
+	//   -contact "email address"    CONTACT="email address"    Administrative contact
+}
