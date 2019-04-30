@@ -9,6 +9,8 @@ import (
 // This validator is used on individual values of a rig.Repeatable
 type Repeatable func(interface{}) error
 
+// ToRepeatable turns some validator (i.e a func(int) error) into a validators.Repeatable (func(interface{}) error),
+// removing the need to implement separate validators when dealing with repeatables.
 func ToRepeatable(validator interface{}) Repeatable {
 	val := reflect.ValueOf(validator)
 	if val.Kind() != reflect.Func {
