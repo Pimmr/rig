@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"os"
 	"sort"
+	"strconv"
+	"strings"
+	"unicode"
 
 	"github.com/pkg/errors"
 )
@@ -206,11 +209,11 @@ func (c *Config) flagUsage(f *Flag) []string {
 	line := []string{}
 	switch {
 	case f.Name != "" && f.Env != "":
-		line = append(line, flagUsageExample(f, typ), f.Env+"="+typ)
+		line = append(line, flagUsageExample(f, typ), f.Env+"="+formatTypeHint(typ))
 	case f.Name != "":
 		line = append(line, flagUsageExample(f, typ), "")
 	case f.Env != "":
-		line = append(line, "", f.Env+"="+typ)
+		line = append(line, "", f.Env+"="+formatTypeHint(typ))
 	}
 
 	usage := c.flagUsageDoc(f)
@@ -221,12 +224,20 @@ func (c *Config) flagUsage(f *Flag) []string {
 	return line
 }
 
+func formatTypeHint(typ string) string {
+	if strings.IndexFunc(typ, unicode.IsSpace) == -1 {
+		return typ
+	}
+
+	return strconv.Quote(typ)
+}
+
 func flagUsageExample(f *Flag, typ string) string {
 	if f.IsBoolFlag() {
 		return fmt.Sprintf("-%s", f.Name)
 	}
 
-	return fmt.Sprintf("-%s %s", f.Name, typ)
+	return fmt.Sprintf("-%s %s", f.Name, formatTypeHint(typ))
 }
 
 func (c *Config) flagUsageDoc(f *Flag) string {

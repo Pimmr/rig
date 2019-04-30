@@ -29,5 +29,5 @@ func ExampleTypeHint() {
 
 	// Output:
 	// Usage of rig-test:
-	//   -contact email address    CONTACT=email address    Administrative contact
+	//   -contact "email address"    CONTACT="email address"    Administrative contact
 }
