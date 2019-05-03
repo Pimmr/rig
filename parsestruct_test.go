@@ -765,8 +765,9 @@ func ExampleStructToFlags() {
 		Strings  []string
 		Bool     bool `flag:"boolean" env:"BOOLEAN" usage:"a boolean flag"`
 		Timeouts struct {
-			ReadTimeout  time.Duration
-			WriteTimeout time.Duration
+			ReadTimeout     time.Duration
+			WriteTimeout    time.Duration
+			unexportedField int
 		} `flag:",inline" env:",inline"`
 
 		IgnoreMe float64 `flag:"-"`

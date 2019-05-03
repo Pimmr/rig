@@ -31,7 +31,7 @@ func getFieldInfo(field reflect.Value, typ reflect.StructField) (*fieldInfo, err
 	if err != nil {
 		return nil, err
 	}
-	if flagName == "-" {
+	if !field.CanInterface() || flagName == "-" {
 		return nil, nil
 	}
 	envName, err := getEnvName(typ.Name, typ.Tag.Get("env"))
