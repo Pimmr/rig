@@ -180,7 +180,7 @@ func (v TestFlagValue) String() string {
 	return "TestFlagValue"
 }
 
-func (v TestFlagValue) Set(string) error {
+func (v *TestFlagValue) Set(string) error {
 	return nil
 }
 
@@ -248,8 +248,8 @@ func TestFlagFromInterface(t *testing.T) {
 			},
 			{
 				test:     "flag.Value",
-				in:       TestFlagValue{},
-				expected: Var(TestFlagValue{}, flagName, envName, usage),
+				in:       &TestFlagValue{},
+				expected: Var(&TestFlagValue{}, flagName, envName, usage),
 			},
 			{
 				test:        "unsupported type",
