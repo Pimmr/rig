@@ -49,7 +49,7 @@ func getFieldInfo(field reflect.Value, typ reflect.StructField) (*fieldInfo, err
 		typeHint: typ.Tag.Get("typehint"),
 		required: required,
 
-		isStruct: field.Kind() == reflect.Struct,
+		isStruct: field.Kind() == reflect.Struct && !isFlagValue(typ),
 	}
 
 	if info.flag == "" && info.env == "" && !info.isStruct {
@@ -61,6 +61,10 @@ func getFieldInfo(field reflect.Value, typ reflect.StructField) (*fieldInfo, err
 	info.field = info.field.Addr()
 
 	return info, nil
+}
+
+func isFlagValue(typ reflect.StructField) bool {
+	return typ.Type.Implements(reflect.TypeOf((*flag.Value)(nil)).Elem())
 }
 
 const (

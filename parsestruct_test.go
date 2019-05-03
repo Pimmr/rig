@@ -171,13 +171,16 @@ func TestPrefix(t *testing.T) {
 	})
 }
 
-type testFlagValue struct{}
-
-func (v testFlagValue) String() string {
-	return "testFlagValue"
+type TestFlagValue struct {
+	Foo string
+	Bar string
 }
 
-func (v testFlagValue) Set(string) error {
+func (v TestFlagValue) String() string {
+	return "TestFlagValue"
+}
+
+func (v TestFlagValue) Set(string) error {
 	return nil
 }
 
@@ -245,8 +248,8 @@ func TestFlagFromInterface(t *testing.T) {
 			},
 			{
 				test:     "flag.Value",
-				in:       testFlagValue{},
-				expected: Var(testFlagValue{}, flagName, envName, usage),
+				in:       TestFlagValue{},
+				expected: Var(TestFlagValue{}, flagName, envName, usage),
 			},
 			{
 				test:        "unsupported type",
@@ -769,6 +772,7 @@ func ExampleStructToFlags() {
 			WriteTimeout    time.Duration
 			unexportedField int
 		} `flag:",inline" env:",inline"`
+		CustomType TestFlagValue
 
 		IgnoreMe float64 `flag:"-"`
 	}
@@ -796,5 +800,6 @@ func ExampleStructToFlags() {
 	//   -boolean                   BOOLEAN=bool              a boolean flag (default "false")
 	//   -read-timeout duration     READ_TIMEOUT=duration     (default "0s")
 	//   -write-timeout duration    WRITE_TIMEOUT=duration    (default "0s")
+	//   -custom-type value         CUSTOM_TYPE=value         (default "TestFlagValue")
 
 }
