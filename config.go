@@ -35,6 +35,7 @@ type Config struct {
 	FlagSet *flag.FlagSet
 
 	Flags            []*Flag
+	UsageExtra       func() string
 	defaultValuesSet bool
 }
 
@@ -171,6 +172,10 @@ func (c *Config) Usage() {
 	}
 
 	printUsageLines(c.FlagSet.Output(), lines, 2, 4)
+
+	if c.UsageExtra != nil {
+		fmt.Fprintln(c.FlagSet.Output(), c.UsageExtra())
+	}
 }
 
 func printUsageLines(output io.Writer, lines [][]string, margin, sep int) {
