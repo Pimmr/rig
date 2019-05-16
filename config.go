@@ -3,6 +3,7 @@ package rig
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"sort"
 	"strconv"
@@ -169,18 +170,22 @@ func (c *Config) Usage() {
 		lines = append(lines, line)
 	}
 
-	offsets := offsetsForLines(lines, 2, 4)
+	printUsageLines(c.FlagSet.Output(), lines, 2, 4)
+}
+
+func printUsageLines(output io.Writer, lines [][]string, margin, sep int) {
+	offsets := offsetsForLines(lines, margin, sep)
 
 	for _, line := range lines {
 		delta := 0
 		for i, col := range line {
 			for j := 0; j < offsets[i]-delta; j++ {
-				fmt.Fprint(c.FlagSet.Output(), " ")
+				fmt.Fprint(output, " ")
 			}
-			fmt.Fprintf(c.FlagSet.Output(), "%s", col)
+			fmt.Fprintf(output, "%s", col)
 			delta = len(col)
 		}
-		fmt.Fprintln(c.FlagSet.Output())
+		fmt.Fprintln(output)
 	}
 }
 
