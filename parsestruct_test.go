@@ -743,7 +743,7 @@ func TestParseStruct(t *testing.T) {
 
 func ExampleParseStruct() {
 	type Configuration struct {
-		URL      *url.URL `flag:",required" typehint:"website_url"`
+		URL      *url.URL `flag:",require" typehint:"website_url"`
 		Strings  []string
 		Bool     bool `flag:"boolean" env:"BOOLEAN" usage:"a boolean flag"`
 		Timeouts struct {
