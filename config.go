@@ -178,12 +178,30 @@ func printUsageLines(output io.Writer, lines [][]string, margin, sep int) {
 
 	for _, line := range lines {
 		delta := 0
+		totalOffset := 0
 		for i, col := range line {
 			for j := 0; j < offsets[i]-delta; j++ {
 				fmt.Fprint(output, " ")
 			}
-			fmt.Fprintf(output, "%s", col)
-			delta = len(col)
+			if i < len(line)-1 {
+				fmt.Fprintf(output, "%s", col)
+				delta = len(col)
+				totalOffset += offsets[i]
+				continue
+			}
+
+			colLines := strings.Split(col, "\n")
+			for k, colLine := range colLines {
+				if k == 0 {
+					fmt.Fprintf(output, "%s", colLine)
+					continue
+				}
+				fmt.Fprint(output, "\n")
+				for j := 0; j < offsets[i]+totalOffset; j++ {
+					fmt.Fprint(output, " ")
+				}
+				fmt.Fprintf(output, "%s", strings.TrimLeft(colLine, " \t\r"))
+			}
 		}
 		fmt.Fprintln(output)
 	}
