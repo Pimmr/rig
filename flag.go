@@ -56,3 +56,7 @@ func (f Flag) missingError() error {
 		return errors.Errorf("missing environment variable %s", f.Env)
 	}
 }
+
+func (f Flag) IsSet() bool {
+	return f.set
+}

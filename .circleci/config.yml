@@ -2,7 +2,7 @@ version: 2
 jobs:
   lint-and-test:
     docker:
-      - image: circleci/golang:1.13
+      - image: circleci/golang:1.14.1
     working_directory: /home/circleci/rig
     steps:
       - checkout
@@ -37,7 +37,7 @@ jobs:
       - run:
           name: Linters
           command: |
-            curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b $(go env GOPATH)/bin v1.14.0
+            curl -sfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sudo sh -s -- -b $(go env GOPATH)/bin v1.20.0
             golangci-lint run
 
       - run:

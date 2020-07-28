@@ -41,3 +41,25 @@ func TestFlagMissingError(t *testing.T) {
 		}
 	}
 }
+
+func TestFlagIsSet(t *testing.T) {
+	var i int
+
+	flag := Int(&i, "i", "I", "testing")
+
+	if flag.IsSet() {
+		t.Error("Int(...).IsSet() = true, expected false")
+	}
+
+	s := "foo"
+	_ = flag.Set(s)
+	if flag.IsSet() {
+		t.Errorf("Int(...).Set(%q).IsSet() = true, expected false", s)
+	}
+
+	s = "42"
+	_ = flag.Set(s)
+	if !flag.IsSet() {
+		t.Errorf("Int(...).Set(%q).IsSet() = false, expected true", s)
+	}
+}
