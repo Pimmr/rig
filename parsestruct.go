@@ -6,6 +6,7 @@ import (
 	"os"
 	"reflect"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 	"unicode"
@@ -194,18 +195,13 @@ func StructToFlags(v interface{}) ([]*Flag, error) {
 	if val.Kind() != reflect.Struct {
 		return nil, errors.Errorf("%T is not a struct", v)
 	}
-	valType := val.Type()
 
-	flags := make([]*Flag, 0, val.NumField())
-	for i := 0; i < val.NumField(); i++ {
-		info, err := getFieldInfo(val.Field(i), valType.Field(i))
-		if err != nil {
-			return nil, err
-		}
-		if info == nil {
-			continue
-		}
-
+	fields, err := flagInfo(val)
+	if err != nil {
+		return nil, err
+	}
+	flags := make([]*Flag, 0, len(fields))
+	for _, info := range fields {
 		if info.isStruct {
 			ff, err := StructToFlags(info.field.Interface())
 			if err != nil {
@@ -225,6 +221,29 @@ func StructToFlags(v interface{}) ([]*Flag, error) {
 	}
 
 	return flags, nil
+}
+
+func flagInfo(val reflect.Value) ([]*fieldInfo, error) {
+	valType := val.Type()
+
+	fields := make([]*fieldInfo, 0, val.NumField())
+	for i := 0; i < val.NumField(); i++ {
+		info, err := getFieldInfo(val.Field(i), valType.Field(i))
+		if err != nil {
+			return fields, err
+		}
+		if info == nil {
+			continue
+		}
+
+		fields = append(fields, info)
+	}
+
+	sort.Slice(fields, func(i, j int) bool {
+		return strings.Compare(fields[i].flag, fields[j].flag) < 0
+	})
+
+	return fields, nil
 }
 
 func applyTypeHint(f *Flag, typeHint string) *Flag {
