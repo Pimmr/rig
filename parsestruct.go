@@ -122,6 +122,10 @@ func getEnvName(fieldName, tag string) (envName string, err error) {
 		envName = toUpperSnakeCase(fieldName, "_")
 	}
 
+	if envName == "-" {
+		return "", nil
+	}
+
 	return envName, nil
 }
 

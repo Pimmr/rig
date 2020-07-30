@@ -768,7 +768,7 @@ func ExampleStructToFlags() {
 		Strings  []string
 		Bool     bool `flag:"boolean" env:"BOOLEAN" usage:"a boolean flag"`
 		Timeouts struct {
-			ReadTimeout     time.Duration
+			ReadTimeout     time.Duration `env:"-"`
 			WriteTimeout    time.Duration
 			unexportedField int
 		} `flag:",inline" env:",inline"`
@@ -796,7 +796,7 @@ func ExampleStructToFlags() {
 	// Output:
 	// Usage of test-rig:
 	//   -url website_url           URL=website_url           (required)
-	//   -read-timeout duration     READ_TIMEOUT=duration     (default "0s")
+	//   -read-timeout duration                               (default "0s")
 	//   -write-timeout duration    WRITE_TIMEOUT=duration    (default "0s")
 	//   -boolean                   BOOLEAN=bool              a boolean flag (default "false")
 	//   -custom-type value         CUSTOM_TYPE=value         (default "TestFlagValue")

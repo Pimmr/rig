@@ -9,7 +9,7 @@ import (
 )
 
 type bar struct {
-	FlagE int     `usage:"Flag E"`
+	FlagE int     `usage:"Flag E" env:"-"`
 	FlagF float64 `usage:"Flag F"`
 }
 
