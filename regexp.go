@@ -29,7 +29,7 @@ func (v regexpValidators) Set(s string) error {
 }
 
 // A regexpValue is a wrapper used to manipulate *regexp.Regexp flags.
-// When using Repeatable for *regexp.Regexp, the slice should be of type []regexpValue
+// When using Repeatable for *regexp.Regexp, the slice should be of type []regexpValue.
 type regexpValue struct {
 	Regexp **regexp.Regexp
 }
@@ -41,7 +41,7 @@ func (r regexpValue) String() string {
 	return (*r.Regexp).String()
 }
 
-// Set compiles and sets the regexp represented by `s`
+// Set compiles and sets the regexp represented by `s`.
 func (r *regexpValue) Set(s string) error {
 	var err error
 

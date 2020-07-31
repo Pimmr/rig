@@ -9,8 +9,8 @@ import (
 	"sort"
 	"strings"
 	"time"
-	"unicode"
 
+	"github.com/Pimmr/rig/internal/text"
 	"github.com/pkg/errors"
 )
 
@@ -96,7 +96,7 @@ func getFlagName(fieldName, tag string) (flagName string, required bool, err err
 	}
 
 	if !inline && flagName == "" {
-		flagName = toSnakeCase(fieldName, "-")
+		flagName = text.ToSnakeCase(fieldName, "-")
 	}
 
 	return flagName, required, nil
@@ -119,7 +119,7 @@ func getEnvName(fieldName, tag string) (envName string, err error) {
 	}
 
 	if envName == "" {
-		envName = toUpperSnakeCase(fieldName, "_")
+		envName = text.ToUpperSnakeCase(fieldName, "_")
 	}
 
 	if envName == "-" {
@@ -127,42 +127,6 @@ func getEnvName(fieldName, tag string) (envName string, err error) {
 	}
 
 	return envName, nil
-}
-
-func toSnakeCase(s, sep string) string {
-	ret := ""
-	prev := '\000'
-
-	rr := []rune(s)
-	for i, r := range rr {
-		if i != 0 && unicode.IsUpper(r) && unicode.IsLower(prev) {
-			ret += sep
-		} else if i != 0 && i != len(rr)-1 && unicode.IsUpper(r) && unicode.IsUpper(prev) && unicode.IsLower(rr[i+1]) {
-			ret += sep
-		}
-		prev = r
-		ret += string(unicode.ToLower(r))
-	}
-
-	return ret
-}
-
-func toUpperSnakeCase(s, sep string) string {
-	ret := ""
-	prev := '\000'
-
-	rr := []rune(s)
-	for i, r := range rr {
-		if i != 0 && unicode.IsUpper(r) && unicode.IsLower(prev) {
-			ret += sep
-		} else if i != 0 && i != len(rr)-1 && unicode.IsUpper(r) && unicode.IsUpper(prev) && unicode.IsLower(rr[i+1]) {
-			ret += sep
-		}
-		prev = r
-		ret += string(unicode.ToUpper(r))
-	}
-
-	return ret
 }
 
 // ParseStruct uses a default Config to parse the flages provided using os.Args.
@@ -193,7 +157,7 @@ func ParseStruct(v interface{}, additionalFlags ...*Flag) error {
 //
 // Additional options "inline" and "require" can be specified in the struct tags ("require" should be specified on the "flag" tag).
 //
-// A flag or env can be marked as ignored by using `flag:"-"` and `env:"-"` respectively
+// A flag or env can be marked as ignored by using `flag:"-"` and `env:"-"` respectively.
 func StructToFlags(v interface{}) ([]*Flag, error) {
 	val := reflect.Indirect(reflect.ValueOf(v))
 	if val.Kind() != reflect.Struct {
@@ -211,7 +175,7 @@ func StructToFlags(v interface{}) ([]*Flag, error) {
 			if err != nil {
 				return nil, err
 			}
-			flags = append(flags, prefix(ff, info.flag, info.env, info.required)...)
+			flags = append(flags, Prefix(ff, info.flag, info.env, info.required)...)
 			continue
 		}
 
@@ -266,7 +230,7 @@ func applyRequired(f *Flag, required bool) *Flag {
 	return Required(f)
 }
 
-func prefix(ff []*Flag, flagName, env string, required bool) []*Flag {
+func Prefix(ff []*Flag, flagName, env string, required bool) []*Flag {
 	for i, f := range ff {
 		if flagName != "" && f.Name != "" {
 			f.Name = flagName + "-" + f.Name

@@ -44,7 +44,7 @@ func DurationMax(max time.Duration) Duration {
 	}
 }
 
-// DurationRounded creates a Duration validator that fails when the time.Duration is not a multiple of `r`
+// DurationRounded creates a Duration validator that fails when the time.Duration is not a multiple of `r`.
 func DurationRounded(r time.Duration) Duration {
 	return func(d time.Duration) error {
 		if d.Round(r) != d {

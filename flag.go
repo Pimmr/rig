@@ -57,7 +57,7 @@ func (f Flag) missingError() error {
 	}
 }
 
-// IsSet returns true if the flag was set via the command line or the environment
+// IsSet returns true if the flag was set via the command line or the environment.
 func (f Flag) IsSet() bool {
 	return f.set
 }

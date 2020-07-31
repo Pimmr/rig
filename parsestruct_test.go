@@ -137,7 +137,7 @@ func TestPrefix(t *testing.T) {
 
 		flagPrefix := "prefix"
 		envPrefix := "PREFIX"
-		flags = prefix(flags, flagPrefix, envPrefix, false)
+		flags = Prefix(flags, flagPrefix, envPrefix, false)
 		for _, f := range flags {
 			if f.Name != "" && !strings.HasPrefix(f.Name, "prefix-") {
 				t.Errorf("prefix(flags, %q, %q, false): expected flag name %q to have '%s-' prefix", flagPrefix, envPrefix, f.Name, flagPrefix)
@@ -156,16 +156,16 @@ func TestPrefix(t *testing.T) {
 
 		flagPrefix := "prefix"
 		envPrefix := "PREFIX"
-		flags = prefix(flags, flagPrefix, envPrefix, true)
+		flags = Prefix(flags, flagPrefix, envPrefix, true)
 		for _, f := range flags {
 			if f.Name != "" && !strings.HasPrefix(f.Name, "prefix-") {
-				t.Errorf("prefix(flags, %q, %q, true): expected flag name %q to have '%s-' prefix", flagPrefix, envPrefix, f.Name, flagPrefix)
+				t.Errorf("Prefix(flags, %q, %q, true): expected flag name %q to have '%s-' prefix", flagPrefix, envPrefix, f.Name, flagPrefix)
 			}
 			if f.Env != "" && !strings.HasPrefix(f.Env, "PREFIX_") {
-				t.Errorf("prefix(flags, %q, %q, true): expected flag env %q to have '%s' prefix", flagPrefix, envPrefix, f.Env, envPrefix)
+				t.Errorf("Prefix(flags, %q, %q, true): expected flag env %q to have '%s' prefix", flagPrefix, envPrefix, f.Env, envPrefix)
 			}
 			if !f.Required {
-				t.Errorf("prefix(flags, %q, %q, true): expected .Required to be true", flagPrefix, envPrefix)
+				t.Errorf("Prefix(flags, %q, %q, true): expected .Required to be true", flagPrefix, envPrefix)
 			}
 		}
 	})
@@ -577,52 +577,6 @@ func TestGetEnvName(t *testing.T) {
 	}
 }
 
-func TestToSnakeCase(t *testing.T) {
-	sep := "-"
-
-	for _, test := range []struct {
-		In       string
-		Expected string
-	}{
-		{In: "", Expected: ""},
-		{In: "f", Expected: "f"},
-		{In: "foo", Expected: "foo"},
-		{In: "Foo", Expected: "foo"},
-		{In: "fooBar", Expected: "foo-bar"},
-		{In: "FooBar", Expected: "foo-bar"},
-		{In: "fooBarBaz", Expected: "foo-bar-baz"},
-		{In: "fooBARBaz", Expected: "foo-bar-baz"},
-	} {
-		got := toSnakeCase(test.In, sep)
-		if got != test.Expected {
-			t.Errorf("toSnakeCase(%q, %q) = %q, expected %q", test.In, sep, got, test.Expected)
-		}
-	}
-}
-
-func TestToUpperSnakeCase(t *testing.T) {
-	sep := "_"
-
-	for _, test := range []struct {
-		In       string
-		Expected string
-	}{
-		{In: "", Expected: ""},
-		{In: "F", Expected: "F"},
-		{In: "foo", Expected: "FOO"},
-		{In: "Foo", Expected: "FOO"},
-		{In: "fooBar", Expected: "FOO_BAR"},
-		{In: "FooBar", Expected: "FOO_BAR"},
-		{In: "fooBarBaz", Expected: "FOO_BAR_BAZ"},
-		{In: "fooBARBaz", Expected: "FOO_BAR_BAZ"},
-	} {
-		got := toUpperSnakeCase(test.In, sep)
-		if got != test.Expected {
-			t.Errorf("toUpperSnakeCase(%q, %q) = %q, expected %q", test.In, sep, got, test.Expected)
-		}
-	}
-}
-
 func TestStructToFlags(t *testing.T) {
 	t.Run("not a struct", func(t *testing.T) {
 		var v int
@@ -794,7 +748,7 @@ func ExampleStructToFlags() {
 	c.Usage()
 
 	// Output:
-	// Usage of test-rig:
+	// Usage: test-rig
 	//   -url website_url           URL=website_url           (required)
 	//   -read-timeout duration                               (default "0s")
 	//   -write-timeout duration    WRITE_TIMEOUT=duration    (default "0s")

@@ -1,12 +1,13 @@
 package validators
 
 import (
-	"github.com/pkg/errors"
 	"reflect"
+
+	"github.com/pkg/errors"
 )
 
 // A Repeatable validator should return an error if the value provided is not considered valid, nil otherwise.
-// This validator is used on individual values of a rig.Repeatable
+// This validator is used on individual values of a rig.Repeatable.
 type Repeatable func(interface{}) error
 
 // ToRepeatable turns some validator (i.e a func(int) error) into a validators.Repeatable (func(interface{}) error),

@@ -34,6 +34,7 @@ func DefaultFlagSet() *flag.FlagSet {
 type Config struct {
 	FlagSet *flag.FlagSet
 
+	UsageDescription string
 	Flags            []*Flag
 	defaultValuesSet bool
 }
@@ -62,7 +63,7 @@ func (c *Config) Parse(arguments []string) error {
 
 	err := c.parseFlagset(arguments)
 	if err != nil {
-		return c.handleError(err)
+		return c.HandleError(err)
 	}
 
 	for _, f := range c.Flags {
@@ -77,20 +78,20 @@ func (c *Config) Parse(arguments []string) error {
 		if f.Name != "" { // we want to maintain `"flag".FlagSet.Visit`'s behavior
 			err = c.FlagSet.Set(f.Name, v)
 			if err != nil {
-				return c.handleError(errors.Wrapf(err, "invalid value %q for env variable %q", v, f.Env))
+				return c.HandleError(errors.Wrapf(err, "invalid value %q for env variable %q", v, f.Env))
 			}
 			continue
 		}
 
 		err = f.Set(v)
 		if err != nil {
-			return c.handleError(errors.Wrapf(err, "invalid value %q for env variable %q", v, f.Env))
+			return c.HandleError(errors.Wrapf(err, "invalid value %q for env variable %q", v, f.Env))
 		}
 	}
 
 	err = c.handleMissingFlags()
 	if err != nil {
-		return c.handleError(err)
+		return c.HandleError(err)
 	}
 
 	return nil
@@ -129,17 +130,17 @@ func (c *Config) handleMissingFlags() error {
 	return nil
 }
 
-// Arg proxies the .Arg method on the underlying flag.Flagset
+// Arg proxies the .Arg method on the underlying flag.Flagset.
 func (c *Config) Arg(i int) string {
 	return c.FlagSet.Arg(i)
 }
 
-// Args proxies the .Args method on the underlying flag.Flagset
+// Args proxies the .Args method on the underlying flag.Flagset.
 func (c *Config) Args() []string {
 	return c.FlagSet.Args()
 }
 
-func (c *Config) handleError(err error) error {
+func (c *Config) HandleError(err error) error {
 	fmt.Fprintf(c.FlagSet.Output(), "%s\n", err)
 	c.Usage()
 	switch c.FlagSet.ErrorHandling() {
@@ -153,13 +154,23 @@ func (c *Config) handleError(err error) error {
 
 // Usage prints the usage for the flags to the output defined on the underlying flag.FlagSet.
 func (c *Config) Usage() {
+	fmt.Fprintf(c.FlagSet.Output(), "Usage: %s\n", c.FlagSet.Name())
+
+	flagsUsage := c.FlagsUsage()
+	fmt.Fprint(c.FlagSet.Output(), flagsUsage)
+
+	if c.UsageDescription != "" {
+		fmt.Fprintf(c.FlagSet.Output(), "\n%s", c.UsageDescription)
+	}
+}
+
+func (c *Config) FlagsUsage() string {
 	c.setDefaultValues()
 
 	sort.Slice(c.Flags, func(i, j int) bool {
 		return c.Flags[i].Required && !c.Flags[j].Required
 	})
 
-	fmt.Fprintf(c.FlagSet.Output(), "Usage of %s:\n", c.FlagSet.Name())
 	lines := make([][]string, 0, len(c.Flags))
 	for _, f := range c.Flags {
 		if f.Name == "" && f.Env == "" {
@@ -170,7 +181,10 @@ func (c *Config) Usage() {
 		lines = append(lines, line)
 	}
 
-	printUsageLines(c.FlagSet.Output(), lines, 2, 4)
+	b := &strings.Builder{}
+	printUsageLines(b, lines, 2, 4)
+
+	return b.String()
 }
 
 func printUsageLines(output io.Writer, lines [][]string, margin, sep int) {

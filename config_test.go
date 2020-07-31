@@ -395,7 +395,7 @@ func TestHandleErrorExitOnError(t *testing.T) {
 		FlagSet: flag.NewFlagSet("flagset", flag.ExitOnError),
 	}
 
-	_ = c.handleError(errTest)
+	_ = c.HandleError(errTest)
 	t.Logf("should have os.Exit, this code shouldn't have been reached")
 }
 
@@ -443,7 +443,7 @@ func TestHandleError(t *testing.T) {
 			}
 		}()
 
-		_ = c.handleError(errTest)
+		_ = c.HandleError(errTest)
 		t.Errorf("should have panicked, this code shouldn't have been reached")
 	})
 
@@ -454,9 +454,9 @@ func TestHandleError(t *testing.T) {
 		buf := &bytes.Buffer{}
 		c.FlagSet.SetOutput(buf)
 
-		err := c.handleError(errTest)
+		err := c.HandleError(errTest)
 		if err != errTest {
-			t.Errorf("c.handleError(errTest) = %v, expected %v", err, errTest)
+			t.Errorf("c.HandleError(errTest) = %v, expected %v", err, errTest)
 		}
 
 		firstLine, err := buf.ReadString('\n')

@@ -2,6 +2,7 @@ simple
 example-repeatable
 example-validators
 example-struct
+example-cmd
 
 !/examples/**
 
