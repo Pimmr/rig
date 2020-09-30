@@ -69,8 +69,8 @@ func (c *Config) Parse(arguments []string) error {
 		if f.Env == "" || f.set { // environment variables should not overwrite the command-line arguments
 			continue
 		}
-		v := os.Getenv(f.Env)
-		if v == "" {
+		v, ok := os.LookupEnv(f.Env)
+		if !ok {
 			continue
 		}
 
