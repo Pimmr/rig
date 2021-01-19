@@ -17,11 +17,11 @@ func (b *boolValue) Set(s string) error {
 	return err
 }
 
-func (b *boolValue) IsBoolFlag() bool {
+func (*boolValue) IsBoolFlag() bool {
 	return true
 }
 
-func (b boolValue) New(i interface{}) flag.Value {
+func (*boolValue) New(i interface{}) flag.Value {
 	return (*boolValue)(i.(*bool))
 }
 

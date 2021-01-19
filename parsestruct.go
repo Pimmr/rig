@@ -297,22 +297,35 @@ func getCompatiblePointerToPointerElem(i interface{}) (reflect.Value, bool) {
 	return v.Elem(), true
 }
 
-func flagFromInterface(i interface{}, flagName, env, usage string) (*Flag, error) {
+func flagFromInterface(i interface{}, flagName, env, usage string) (f *Flag, err error) {
 	elem, ok := getCompatiblePointerToPointerElem(i)
 	if !ok {
-		return flagFromInterfaceSimple(i, flagName, env, usage)
+		return flagFromInterfaceConcrete(i, flagName, env, usage)
 	}
 
-	f, err := flagFromInterfaceSimple(elem.Interface(), flagName, env, usage)
+	f, err = flagFromInterfaceConcrete(elem.Interface(), flagName, env, usage)
 	if err != nil {
 		return nil, err
 	}
+
+	defer func() {
+		r := recover()
+		if r == nil {
+			return
+		}
+
+		if errv, ok := r.(error); ok {
+			err = errv
+		} else {
+			panic(r)
+		}
+	}()
 
 	return Pointer(f, i), nil
 }
 
 //nolint:gocyclo
-func flagFromInterfaceSimple(i interface{}, flagName, env, usage string) (*Flag, error) {
+func flagFromInterfaceConcrete(i interface{}, flagName, env, usage string) (*Flag, error) {
 	switch t := i.(type) {
 	default:
 		v, ok := i.(flag.Value)

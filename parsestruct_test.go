@@ -177,10 +177,21 @@ type TestFlagValue struct {
 }
 
 func (v TestFlagValue) String() string {
-	return "TestFlagValue"
+	return v.Foo
 }
 
-func (v *TestFlagValue) Set(string) error {
+func (v *TestFlagValue) Set(s string) error {
+	v.Foo = s
+	return nil
+}
+
+type ReadOnlyFlag struct{}
+
+func (ReadOnlyFlag) String() string {
+	return "ReadOnlyFlag"
+}
+
+func (ReadOnlyFlag) Set(string) error {
 	return nil
 }
 
@@ -191,169 +202,262 @@ func TestFlagFromInterface(t *testing.T) {
 
 	t.Run("non-slice", func(t *testing.T) {
 		for _, test := range []struct {
-			test        string
 			in          interface{}
 			expected    *Flag
 			expectError bool
 		}{
 			{
-				test:     "int",
 				in:       new(int),
 				expected: Int(new(int), flagName, envName, usage),
 			},
 			{
-				test:     "int64",
 				in:       new(int64),
 				expected: Int64(new(int64), flagName, envName, usage),
 			},
 			{
-				test:     "uint",
 				in:       new(uint),
 				expected: Uint(new(uint), flagName, envName, usage),
 			},
 			{
-				test:     "uint64",
 				in:       new(uint64),
 				expected: Uint64(new(uint64), flagName, envName, usage),
 			},
 			{
-				test:     "string",
 				in:       new(string),
 				expected: String(new(string), flagName, envName, usage),
 			},
 			{
-				test:     "bool",
 				in:       new(bool),
 				expected: Bool(new(bool), flagName, envName, usage),
 			},
 			{
-				test:     "duration",
 				in:       new(time.Duration),
 				expected: Duration(new(time.Duration), flagName, envName, usage),
 			},
 			{
-				test:     "float64",
 				in:       new(float64),
 				expected: Float64(new(float64), flagName, envName, usage),
 			},
 			{
-				test:     "regexp",
 				in:       new(*regexp.Regexp),
 				expected: Regexp(new(*regexp.Regexp), flagName, envName, usage),
 			},
 			{
-				test:     "url",
 				in:       new(*url.URL),
 				expected: URL(new(*url.URL), flagName, envName, usage),
 			},
 			{
-				test:     "flag.Value",
 				in:       &TestFlagValue{},
 				expected: Var(&TestFlagValue{}, flagName, envName, usage),
 			},
 			{
-				test:        "unsupported type",
+				in:       ReadOnlyFlag{},
+				expected: Var(ReadOnlyFlag{}, flagName, envName, usage),
+			},
+			{
 				in:          &struct{}{},
 				expectError: true,
 			},
 		} {
-			f, err := flagFromInterface(test.in, flagName, envName, usage)
-			if test.expectError && err == nil {
-				t.Errorf("flagFromInterface(%s): expected error, got nil", test.test)
-				continue
-			}
-			if !test.expectError && err != nil {
-				t.Errorf("flagFromInterface(%s): unexpected error: %v", test.test, err)
-				continue
-			}
+			t.Run(fmt.Sprintf("%T", test.in), func(t *testing.T) {
+				f, err := flagFromInterface(test.in, flagName, envName, usage)
+				if test.expectError && err == nil {
+					t.Errorf("flagFromInterface(%T): expected error, got nil", test.in)
+				}
+				if !test.expectError && err != nil {
+					t.Errorf("flagFromInterface(%T): unexpected error: %v", test.in, err)
+				}
+				if test.expectError || err != nil {
+					return
+				}
 
-			if !reflect.DeepEqual(f, test.expected) {
-				t.Errorf("flagFromInterface(%s) = %#v, expected %#v", test.test, f, test.expected)
-			}
+				if !reflect.DeepEqual(f, test.expected) {
+					t.Errorf("flagFromInterface(%T) = %#v, expected %#v", test.in, f, test.expected)
+				}
+			})
+		}
+	})
+
+	t.Run("pointers", func(t *testing.T) {
+		var (
+			intPtr      *int
+			int64Ptr    *int64
+			uintPtr     *uint
+			uint64Ptr   *uint64
+			stringPtr   *string
+			boolPtr     *bool
+			durationPtr *time.Duration
+			float64Ptr  *float64
+			varPtr      *TestFlagValue
+		)
+
+		for _, test := range []struct {
+			in          interface{}
+			expected    *Flag
+			setIn       string
+			expectError bool
+		}{
+			{
+				in:       &intPtr,
+				expected: Pointer(Int(intPtr, flagName, envName, usage), &intPtr),
+				setIn:    "42",
+			},
+			{
+				in:       &int64Ptr,
+				expected: Pointer(Int64(int64Ptr, flagName, envName, usage), &int64Ptr),
+				setIn:    "-21",
+			},
+			{
+				in:       &uintPtr,
+				expected: Pointer(Uint(uintPtr, flagName, envName, usage), &uintPtr),
+				setIn:    "84",
+			},
+			{
+				in:       &uint64Ptr,
+				expected: Pointer(Uint64(uint64Ptr, flagName, envName, usage), &uint64Ptr),
+				setIn:    "13",
+			},
+			{
+				in:       &stringPtr,
+				expected: Pointer(String(stringPtr, flagName, envName, usage), &stringPtr),
+				setIn:    "foo",
+			},
+			{
+				in:       &boolPtr,
+				expected: Pointer(Bool(boolPtr, flagName, envName, usage), &boolPtr),
+				setIn:    "true",
+			},
+			{
+				in:       &durationPtr,
+				expected: Pointer(Duration(durationPtr, flagName, envName, usage), &durationPtr),
+				setIn:    "5m2s",
+			},
+			{
+				in:       &float64Ptr,
+				expected: Pointer(Float64(float64Ptr, flagName, envName, usage), &float64Ptr),
+				setIn:    "4.2",
+			},
+			{
+				in:       &varPtr,
+				expected: Pointer(Var(varPtr, flagName, envName, usage), &varPtr),
+				setIn:    "bar",
+			},
+			{
+				in:          new(*struct{}),
+				expectError: true,
+			},
+			{
+				in:          new(*[]int),
+				expectError: true,
+			},
+		} {
+			t.Run(fmt.Sprintf("%T", test.in), func(t *testing.T) {
+				f, err := flagFromInterface(test.in, flagName, envName, usage)
+				if test.expectError && err == nil {
+					t.Errorf("flagFromInterface(%T): expected error, got nil", test.in)
+				}
+				if !test.expectError && err != nil {
+					t.Errorf("flagFromInterface(%T): unexpected error: %v", test.in, err)
+				}
+				if test.expectError || err != nil {
+					return
+				}
+
+				if !reflect.DeepEqual(f, test.expected) {
+					t.Errorf("flagFromInterface(%T) = %#v, expected %#v", test.in, f, test.expected)
+				}
+
+				const expectedNil = "<nil>"
+				got := f.String()
+				if got != expectedNil {
+					t.Errorf("flagFromInterface(%T).String() = %q, expected %q", test.in, got, expectedNil)
+				}
+
+				err = f.Set(test.setIn)
+				if err != nil {
+					t.Errorf("flagFromInterface(%T).Set(%q): unexpected error: %v", test.in, test.setIn, err)
+				}
+
+				got = f.String()
+				if got != test.setIn {
+					t.Errorf("flagFromInterface(%T).Set(%q).String() = %q, expected %q", test.in, test.setIn, got, test.setIn)
+				}
+			})
 		}
 	})
 
 	t.Run("slice", func(t *testing.T) {
 		for _, test := range []struct {
-			test     string
 			in       interface{}
 			expected *Flag
 		}{
 			{
-				test:     "[]int",
 				in:       new([]int),
 				expected: Repeatable(new([]int), IntGenerator(), flagName, envName, usage),
 			},
 			{
-				test:     "[]int64",
 				in:       new([]int64),
 				expected: Repeatable(new([]int64), Int64Generator(), flagName, envName, usage),
 			},
 			{
-				test:     "[]uint",
 				in:       new([]uint),
 				expected: Repeatable(new([]uint), UintGenerator(), flagName, envName, usage),
 			},
 			{
-				test:     "[]uint64",
 				in:       new([]uint64),
 				expected: Repeatable(new([]uint64), Uint64Generator(), flagName, envName, usage),
 			},
 			{
-				test:     "[]string",
 				in:       new([]string),
 				expected: Repeatable(new([]string), StringGenerator(), flagName, envName, usage),
 			},
 			{
-				test:     "[]bool",
 				in:       new([]bool),
 				expected: Repeatable(new([]bool), BoolGenerator(), flagName, envName, usage),
 			},
 			{
-				test:     "[]duration",
 				in:       new([]time.Duration),
 				expected: Repeatable(new([]time.Duration), DurationGenerator(), flagName, envName, usage),
 			},
 			{
-				test:     "[]float64",
 				in:       new([]float64),
 				expected: Repeatable(new([]float64), Float64Generator(), flagName, envName, usage),
 			},
 			{
-				test:     "[]regexp",
 				in:       new([]*regexp.Regexp),
 				expected: Repeatable(new([]*regexp.Regexp), RegexpGenerator(), flagName, envName, usage),
 			},
 			{
-				test:     "[]url",
 				in:       new([]*url.URL),
 				expected: Repeatable(new([]*url.URL), URLGenerator(), flagName, envName, usage),
 			},
 		} {
-			f, err := flagFromInterface(test.in, flagName, envName, usage)
-			if err != nil {
-				t.Errorf("flagFromInterface(%s): unexpected error: %v", test.test, err)
-				continue
-			}
+			t.Run(fmt.Sprintf("%T", test.in), func(t *testing.T) {
+				f, err := flagFromInterface(test.in, flagName, envName, usage)
+				if err != nil {
+					t.Errorf("flagFromInterface(%T): unexpected error: %v", test.in, err)
+					return
+				}
 
-			testSv, ok := test.expected.Value.(sliceValue)
-			if !ok {
-				t.Errorf("expected test.expected.Value to be of type sliceValue, got %T instead", test.expected.Value)
-				continue
-			}
+				testSv, ok := test.expected.Value.(sliceValue)
+				if !ok {
+					t.Errorf("expected test.expected.Value to be of type sliceValue, got %T instead", test.expected.Value)
+					return
+				}
 
-			if sv, ok := f.Value.(sliceValue); !ok {
-				t.Errorf("flag.Value: expected type 'sliceValue', got %T instead", f.Value)
-			} else if reflect.TypeOf(sv.value) != reflect.TypeOf(testSv.value) {
-				t.Errorf("flagFromInterface(%s).Value.value = %T, expected %T", test.test, sv.value, testSv.value)
-				continue
-			}
+				if sv, ok := f.Value.(sliceValue); !ok {
+					t.Errorf("flag.Value: expected type 'sliceValue', got %T instead", f.Value)
+				} else if reflect.TypeOf(sv.value) != reflect.TypeOf(testSv.value) {
+					t.Errorf("flagFromInterface(%T).Value.value = %T, expected %T", test.in, sv.value, testSv.value)
+					return
+				}
 
-			f.Value = nil
-			test.expected.Value = nil
-			if !reflect.DeepEqual(f, test.expected) {
-				t.Errorf("flagFromInterface(%s) = %#v, expected %#v", test.test, f, test.expected)
-			}
+				f.Value = nil
+				test.expected.Value = nil
+				if !reflect.DeepEqual(f, test.expected) {
+					t.Errorf("flagFromInterface(%T) = %#v, expected %#v", test.in, f, test.expected)
+				}
+			})
 		}
 	})
 }
@@ -777,7 +881,11 @@ func ExampleStructToFlags() {
 		IgnoreMe float64 `flag:"-"`
 	}
 
-	conf := Configuration{}
+	conf := Configuration{
+		CustomType: TestFlagValue{
+			Foo: "TestFlagValue",
+		},
+	}
 
 	flags, err := StructToFlags(&conf)
 	if err != nil {

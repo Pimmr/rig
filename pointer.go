@@ -8,7 +8,7 @@ import (
 )
 
 type pointerFlag struct {
-	Value instanciator
+	Value PointerValue
 
 	Var reflect.Value
 }
@@ -41,14 +41,14 @@ type noopInstanciator struct {
 }
 
 func (noopInstanciator) New(interface{}) flag.Value {
-	panic(errors.Errorf("Not Implemented"))
+	panic(errors.New("Not Implemented"))
 }
 
 func (noopInstanciator) IsNil() bool {
 	return false
 }
 
-type instanciator interface {
+type PointerValue interface {
 	flag.Value
 
 	New(interface{}) flag.Value
@@ -56,10 +56,11 @@ type instanciator interface {
 }
 
 func Pointer(f *Flag, v interface{}) *Flag {
-	iv, ok := f.Value.(instanciator)
+	iv, ok := f.Value.(PointerValue)
 	if !ok {
-		panic(errors.Errorf("%T does not implement the instanciator interface", f.Value))
+		panic(errors.Errorf("%T does not implement the rig.PointerValue interface", f.Value))
 	}
+
 	return &Flag{
 		Value: &pointerFlag{
 			Value: iv,
