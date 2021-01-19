@@ -28,6 +28,17 @@ func (v int64Validators) Set(s string) error {
 	return nil
 }
 
+func (v int64Validators) New(i interface{}) flag.Value {
+	return int64Validators{
+		int64Value: (*int64Value)(i.(*int64)),
+		validators: v.validators,
+	}
+}
+
+func (v int64Validators) IsNil() bool {
+	return v.int64Value == nil
+}
+
 type int64Value int64
 
 func (i int64Value) String() string {

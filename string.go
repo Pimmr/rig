@@ -24,6 +24,17 @@ func (v stringValidators) Set(s string) error {
 	return nil
 }
 
+func (v stringValidators) New(i interface{}) flag.Value {
+	return stringValidators{
+		stringValue: (*stringValue)(i.(*string)),
+		validators:  v.validators,
+	}
+}
+
+func (v stringValidators) IsNil() bool {
+	return v.stringValue == nil
+}
+
 type stringValue string
 
 func (s stringValue) String() string {

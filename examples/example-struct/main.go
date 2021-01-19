@@ -42,6 +42,7 @@ type foo struct {
 	Bar   bar `flag:",require"`
 	Baz   bar `flag:",inline" env:",inline"`
 	Blah  bar `flag:"-"`
+	FlagH *int
 }
 
 func main() {
@@ -53,4 +54,7 @@ func main() {
 	}
 
 	fmt.Printf("%+v\n", f)
+	if f.FlagH != nil {
+		fmt.Printf("FlagH = %d\n", *f.FlagH)
+	}
 }

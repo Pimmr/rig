@@ -28,6 +28,17 @@ func (v durationValidators) Set(s string) error {
 	return nil
 }
 
+func (v durationValidators) New(i interface{}) flag.Value {
+	return durationValidators{
+		durationValue: (*durationValue)(i.(*time.Duration)),
+		validators:    v.validators,
+	}
+}
+
+func (v durationValidators) IsNil() bool {
+	return v.durationValue == nil
+}
+
 type durationValue time.Duration
 
 func (d durationValue) String() string {

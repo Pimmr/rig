@@ -21,6 +21,14 @@ func (b *boolValue) IsBoolFlag() bool {
 	return true
 }
 
+func (b boolValue) New(i interface{}) flag.Value {
+	return (*boolValue)(i.(*bool))
+}
+
+func (b *boolValue) IsNil() bool {
+	return b == nil
+}
+
 // Bool creates a flag for a boolean variable.
 func Bool(v *bool, flag, env, usage string) *Flag {
 	return &Flag{

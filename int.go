@@ -28,6 +28,17 @@ func (v intValidators) Set(s string) error {
 	return nil
 }
 
+func (v intValidators) New(i interface{}) flag.Value {
+	return intValidators{
+		intValue:   (*intValue)(i.(*int)),
+		validators: v.validators,
+	}
+}
+
+func (v intValidators) IsNil() bool {
+	return v.intValue == nil
+}
+
 type intValue int
 
 func (i intValue) String() string {

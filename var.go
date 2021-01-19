@@ -2,6 +2,7 @@ package rig
 
 import (
 	"flag"
+	"reflect"
 
 	"github.com/Pimmr/rig/validators"
 )
@@ -25,6 +26,17 @@ func (v varValidators) Set(s string) error {
 	}
 
 	return nil
+}
+
+func (v varValidators) New(i interface{}) flag.Value {
+	return varValidators{
+		Value:      i.(flag.Value),
+		validators: v.validators,
+	}
+}
+
+func (v varValidators) IsNil() bool {
+	return v.Value == nil || reflect.ValueOf(v.Value).IsNil()
 }
 
 // Var creates a flag for a flag.Value variable.

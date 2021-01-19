@@ -28,6 +28,17 @@ func (v float64Validators) Set(s string) error {
 	return nil
 }
 
+func (v float64Validators) New(i interface{}) flag.Value {
+	return float64Validators{
+		float64Value: (*float64Value)(i.(*float64)),
+		validators:   v.validators,
+	}
+}
+
+func (v float64Validators) IsNil() bool {
+	return v.float64Value == nil
+}
+
 type float64Value float64
 
 func (f float64Value) String() string {
