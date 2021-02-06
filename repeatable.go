@@ -125,6 +125,12 @@ func (vs sliceValue) set(s string) error {
 func Repeatable(v interface{}, generator Generator, flag, env, usage string, validators ...validators.Repeatable) *Flag {
 	value := reflect.ValueOf(v)
 
+	typeHint := ""
+	valueInd := reflect.Indirect(value)
+	if valueInd.IsValid() {
+		typeHint = strings.Replace(valueInd.Type().String(), "[]main.", "[]", 1)
+	}
+
 	return &Flag{
 		Value: sliceValue{
 			value:      value,
@@ -134,7 +140,7 @@ func Repeatable(v interface{}, generator Generator, flag, env, usage string, val
 		Name:     flag,
 		Env:      env,
 		Usage:    usage,
-		TypeHint: strings.Replace(reflect.Indirect(value).Type().String(), "[]main.", "[]", 1),
+		TypeHint: typeHint,
 	}
 }
 

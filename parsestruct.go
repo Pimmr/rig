@@ -280,8 +280,52 @@ func prefix(ff []*Flag, flagName, env string, required bool) []*Flag {
 	return ff
 }
 
+func getCompatiblePointerToPointerElem(i interface{}) (reflect.Value, bool) {
+	switch i.(type) {
+	case **url.URL, **regexp.Regexp:
+		return reflect.Value{}, false
+	}
+
+	v := reflect.ValueOf(i)
+	if v.Kind() != reflect.Ptr {
+		return reflect.Value{}, false
+	}
+	if v.Type().Elem().Kind() != reflect.Ptr {
+		return reflect.Value{}, false
+	}
+
+	return v.Elem(), true
+}
+
+func flagFromInterface(i interface{}, flagName, env, usage string) (f *Flag, err error) {
+	elem, ok := getCompatiblePointerToPointerElem(i)
+	if !ok {
+		return flagFromInterfaceConcrete(i, flagName, env, usage)
+	}
+
+	f, err = flagFromInterfaceConcrete(elem.Interface(), flagName, env, usage)
+	if err != nil {
+		return nil, err
+	}
+
+	defer func() {
+		r := recover()
+		if r == nil {
+			return
+		}
+
+		if errv, ok := r.(error); ok {
+			err = errv
+		} else {
+			panic(r)
+		}
+	}()
+
+	return Pointer(f, i), nil
+}
+
 //nolint:gocyclo
-func flagFromInterface(i interface{}, flagName, env, usage string) (*Flag, error) {
+func flagFromInterfaceConcrete(i interface{}, flagName, env, usage string) (*Flag, error) {
 	switch t := i.(type) {
 	default:
 		v, ok := i.(flag.Value)

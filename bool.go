@@ -17,8 +17,16 @@ func (b *boolValue) Set(s string) error {
 	return err
 }
 
-func (b *boolValue) IsBoolFlag() bool {
+func (*boolValue) IsBoolFlag() bool {
 	return true
+}
+
+func (*boolValue) New(i interface{}) flag.Value {
+	return (*boolValue)(i.(*bool))
+}
+
+func (b *boolValue) IsNil() bool {
+	return b == nil
 }
 
 // Bool creates a flag for a boolean variable.
