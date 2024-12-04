@@ -1,3 +1,3 @@
 module github.com/Pimmr/rig
 
-go 1.13
+go 1.14

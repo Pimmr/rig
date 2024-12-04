@@ -19,8 +19,8 @@ jobs:
       - run:
           name: Installing tools
           command: |
-            go get -u -v github.com/jstemmer/go-junit-report
-            go get -u github.com/mattn/goveralls
+            go install -v github.com/jstemmer/go-junit-report
+            go install -v github.com/mattn/goveralls
 
       - run:
           name: Building examples
