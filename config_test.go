@@ -2,6 +2,7 @@ package rig
 
 import (
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"io/ioutil"
@@ -13,7 +14,6 @@ import (
 	"time"
 
 	"github.com/Pimmr/rig/validators"
-	"github.com/pkg/errors"
 )
 
 func testingFlagset() *flag.FlagSet {
@@ -28,7 +28,9 @@ func commandLineFlags(t *testing.T) []*Flag {
 	t.Helper()
 	flags := []*Flag{}
 	flag.CommandLine.VisitAll(func(f *flag.Flag) {
-		flags = append(flags, Var(MakeGenerator(f.Value)(), f.Name, "", ""))
+		var s string
+
+		flags = append(flags, String(&s, f.Name, "", ""))
 	})
 
 	return flags

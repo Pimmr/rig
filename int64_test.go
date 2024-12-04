@@ -1,10 +1,10 @@
 package rig
 
 import (
+	"errors"
 	"testing"
 
 	"github.com/Pimmr/rig/validators"
-	"github.com/pkg/errors"
 )
 
 func TestInt64Value(t *testing.T) {

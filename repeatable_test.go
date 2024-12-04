@@ -1,6 +1,7 @@
 package rig
 
 import (
+	"errors"
 	"net/url"
 	"reflect"
 	"regexp"
@@ -8,7 +9,6 @@ import (
 	"testing"
 
 	"github.com/Pimmr/rig/validators"
-	"github.com/pkg/errors"
 )
 
 type stringeringString string

@@ -2,6 +2,7 @@ package rig
 
 import (
 	"flag"
+	"fmt"
 	"net/url"
 	"os"
 	"reflect"
@@ -10,8 +11,6 @@ import (
 	"strings"
 	"time"
 	"unicode"
-
-	"github.com/pkg/errors"
 )
 
 type fieldInfo struct {
@@ -57,7 +56,7 @@ func getFieldInfo(field reflect.Value, typ reflect.StructField) (*fieldInfo, err
 		return nil, nil
 	}
 	if !info.field.CanAddr() {
-		return nil, errors.Errorf(".%s: cannot get address", info.typ.Name)
+		return nil, fmt.Errorf(".%s: cannot get address", info.typ.Name)
 	}
 	info.field = info.field.Addr()
 
@@ -92,7 +91,7 @@ func getFlagName(fieldName, tag string) (flagName string, required bool, err err
 			continue
 		}
 
-		return flagName, required, errors.Errorf("unknown flag option %q", t)
+		return flagName, required, fmt.Errorf("unknown flag option %q", t)
 	}
 
 	if !inline && flagName == "" {
@@ -109,13 +108,13 @@ func getEnvName(fieldName, tag string) (envName string, err error) {
 		tt = tt[1:]
 	}
 	if len(tt) > 1 {
-		return envName, errors.Errorf("too many env options")
+		return envName, fmt.Errorf("too many env options")
 	}
 	if len(tt) == 1 {
 		if tt[0] == inlineOpt {
 			return "", nil
 		}
-		return envName, errors.Errorf("unknown env option %q", tt[0])
+		return envName, fmt.Errorf("unknown env option %q", tt[0])
 	}
 
 	if envName == "" {
@@ -197,7 +196,7 @@ func ParseStruct(v interface{}, additionalFlags ...*Flag) error {
 func StructToFlags(v interface{}) ([]*Flag, error) {
 	val := reflect.Indirect(reflect.ValueOf(v))
 	if val.Kind() != reflect.Struct {
-		return nil, errors.Errorf("%T is not a struct", v)
+		return nil, fmt.Errorf("%T is not a struct", v)
 	}
 
 	fields, err := flagInfo(val)
@@ -333,7 +332,7 @@ func flagFromInterfaceConcrete(i interface{}, flagName, env, usage string) (*Fla
 			return Var(v, flagName, env, usage), nil
 		}
 
-		return nil, errors.Errorf("unsupported type %T", i)
+		return nil, fmt.Errorf("unsupported type %T", i)
 	case *int:
 		return Int(t, flagName, env, usage), nil
 	case *int64:

@@ -1,12 +1,12 @@
 package rig
 
 import (
+	"errors"
 	"fmt"
 	"regexp"
 	"testing"
 
 	"github.com/Pimmr/rig/validators"
-	"github.com/pkg/errors"
 )
 
 func TestRegexpValue(t *testing.T) {

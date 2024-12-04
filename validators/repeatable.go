@@ -1,7 +1,7 @@
 package validators
 
 import (
-	"github.com/pkg/errors"
+	"fmt"
 	"reflect"
 )
 
@@ -14,20 +14,20 @@ type Repeatable func(interface{}) error
 func ToRepeatable(validator interface{}) Repeatable {
 	val := reflect.ValueOf(validator)
 	if val.Kind() != reflect.Func {
-		panic(errors.Errorf("ToRepeatable: expected a function, got %T", validator))
+		panic(fmt.Errorf("ToRepeatable: expected a function, got %T", validator))
 	}
 	valT := val.Type()
 	if valT.NumIn() != 1 {
-		panic(errors.Errorf("ToRepeatable: expected validator to accept 1 argument, got %d", valT.NumIn()))
+		panic(fmt.Errorf("ToRepeatable: expected validator to accept 1 argument, got %d", valT.NumIn()))
 	}
 	argT := valT.In(0)
 
 	if valT.NumOut() != 1 {
-		panic(errors.Errorf("ToRepeatable: expected validator to return 1 value, got %d", valT.NumOut()))
+		panic(fmt.Errorf("ToRepeatable: expected validator to return 1 value, got %d", valT.NumOut()))
 	}
 	retT := valT.Out(0)
 	if !retT.Implements(reflect.TypeOf((*error)(nil)).Elem()) {
-		panic(errors.Errorf("ToRepeatable: expected validator to return value of type error, got %v", retT))
+		panic(fmt.Errorf("ToRepeatable: expected validator to return value of type error, got %v", retT))
 	}
 
 	return func(value interface{}) error {
@@ -40,7 +40,7 @@ func ToRepeatable(validator interface{}) Repeatable {
 		}
 
 		if !vT.AssignableTo(argT) {
-			return errors.Errorf("cannot use validator on type %v, expected %v", vT, argT)
+			return fmt.Errorf("cannot use validator on type %v, expected %v", vT, argT)
 		}
 
 		out := val.Call([]reflect.Value{v})

@@ -1,16 +1,15 @@
 package validators
 
 import (
+	"fmt"
 	"net/url"
 	"testing"
-
-	"github.com/pkg/errors"
 )
 
 func urlMustParse(s string) *url.URL {
 	u, err := url.Parse(s)
 	if err != nil {
-		panic(errors.Wrapf(err, "urlMustParse parsing %q", s))
+		panic(fmt.Errorf("urlMustParse parsing %q: %w", s, err))
 	}
 
 	return u

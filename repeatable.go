@@ -7,7 +7,6 @@ import (
 	"strings"
 
 	"github.com/Pimmr/rig/validators"
-	"github.com/pkg/errors"
 )
 
 // A Generator is a function that returns new values of a type implementing flag.Value.
@@ -82,14 +81,14 @@ func splitRepeatable(in string) []string {
 
 func (vs sliceValue) set(s string) error {
 	if vs.value.Kind() != reflect.Ptr {
-		return errors.Errorf("expected pointer to slice, got %s instead", vs.value.Kind())
+		return fmt.Errorf("expected pointer to slice, got %s instead", vs.value.Kind())
 	}
 	ind := reflect.Indirect(vs.value)
 	if ind.Kind() != reflect.Slice {
-		return errors.Errorf("expected pointer to slice, got pointer to %s instead", ind.Kind())
+		return fmt.Errorf("expected pointer to slice, got pointer to %s instead", ind.Kind())
 	}
 	if !ind.CanSet() {
-		return errors.Errorf("expected pointer to slice to be settable")
+		return fmt.Errorf("expected pointer to slice to be settable")
 	}
 
 	v := vs.generator()
@@ -112,7 +111,7 @@ func (vs sliceValue) set(s string) error {
 
 	vv := reflect.Indirect(reflect.ValueOf(vi))
 	if !vv.Type().ConvertibleTo(ind.Type().Elem()) {
-		return errors.Errorf("type %s cannot be converted to %s", vv.Type(), ind.Type().Elem())
+		return fmt.Errorf("type %s cannot be converted to %s", vv.Type(), ind.Type().Elem())
 	}
 	vv = vv.Convert(ind.Type().Elem())
 	ind.Set(reflect.Append(ind, vv))
@@ -157,7 +156,7 @@ func MakeGenerator(v flag.Value) Generator {
 		}
 		ret, ok := vv.Interface().(flag.Value)
 		if !ok {
-			panic(errors.Errorf("expected to be able to cast to flag.Value when generating for %s", t))
+			panic(fmt.Errorf("expected to be able to cast to flag.Value when generating for %s", t))
 		}
 
 		return ret

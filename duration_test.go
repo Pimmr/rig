@@ -1,11 +1,11 @@
 package rig
 
 import (
+	"errors"
 	"testing"
 	"time"
 
 	"github.com/Pimmr/rig/validators"
-	"github.com/pkg/errors"
 )
 
 func TestDurationValue(t *testing.T) {

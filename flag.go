@@ -1,9 +1,9 @@
 package rig
 
 import (
+	"errors"
 	"flag"
-
-	"github.com/pkg/errors"
+	"fmt"
 )
 
 // A Flag represents the state and definition of a flag.
@@ -49,11 +49,11 @@ func (f Flag) missingError() error {
 	default:
 		return errors.New("configuration variable doesn't have a flag or environment variable specified")
 	case f.Name != "" && f.Env != "":
-		return errors.Errorf("missing command line flag -%s or environment variable %s", f.Name, f.Env)
+		return fmt.Errorf("missing command line flag -%s or environment variable %s", f.Name, f.Env)
 	case f.Name != "":
-		return errors.Errorf("missing command line flag -%s", f.Name)
+		return fmt.Errorf("missing command line flag -%s", f.Name)
 	case f.Env != "":
-		return errors.Errorf("missing environment variable %s", f.Env)
+		return fmt.Errorf("missing environment variable %s", f.Env)
 	}
 }
 
