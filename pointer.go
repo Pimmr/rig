@@ -1,10 +1,10 @@
 package rig
 
 import (
+	"errors"
 	"flag"
+	"fmt"
 	"reflect"
-
-	"github.com/pkg/errors"
 )
 
 type pointerFlag struct {
@@ -58,7 +58,7 @@ type PointerValue interface {
 func Pointer(f *Flag, v interface{}) *Flag {
 	iv, ok := f.Value.(PointerValue)
 	if !ok {
-		panic(errors.Errorf("%T does not implement the rig.PointerValue interface", f.Value))
+		panic(fmt.Errorf("%T does not implement the rig.PointerValue interface", f.Value))
 	}
 
 	return &Flag{

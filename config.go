@@ -1,6 +1,7 @@
 package rig
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"io"
@@ -9,8 +10,6 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
-
-	"github.com/pkg/errors"
 )
 
 // Parse uses a default Config to parse the flags provided using os.Args.
@@ -77,14 +76,14 @@ func (c *Config) Parse(arguments []string) error {
 		if f.Name != "" { // we want to maintain `"flag".FlagSet.Visit`'s behavior
 			err = c.FlagSet.Set(f.Name, v)
 			if err != nil {
-				return c.handleError(errors.Wrapf(err, "invalid value %q for env variable %q", v, f.Env))
+				return c.handleError(fmt.Errorf("invalid value %q for env variable %q: %w", v, f.Env, err))
 			}
 			continue
 		}
 
 		err = f.Set(v)
 		if err != nil {
-			return c.handleError(errors.Wrapf(err, "invalid value %q for env variable %q", v, f.Env))
+			return c.handleError(fmt.Errorf("invalid value %q for env variable %q: %w", v, f.Env, err))
 		}
 	}
 

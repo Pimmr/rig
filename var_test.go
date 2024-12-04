@@ -1,12 +1,12 @@
 package rig
 
 import (
+	"errors"
 	"flag"
 	"reflect"
 	"testing"
 
 	"github.com/Pimmr/rig/validators"
-	"github.com/pkg/errors"
 )
 
 func newStringValue(s string) *stringValue {

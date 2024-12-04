@@ -1,18 +1,18 @@
 package rig
 
 import (
+	"errors"
 	"fmt"
 	"net/url"
 	"testing"
 
 	"github.com/Pimmr/rig/validators"
-	"github.com/pkg/errors"
 )
 
 func urlMustParse(s string) *url.URL {
 	u, err := url.Parse(s)
 	if err != nil {
-		panic(errors.Wrapf(err, "parsing url %q", s))
+		panic(fmt.Errorf("parsing url %q: %w", s, err))
 	}
 
 	return u
