@@ -41,7 +41,7 @@ type noopInstanciator struct {
 }
 
 func (noopInstanciator) New(interface{}) flag.Value {
-	panic(errors.New("Not Implemented"))
+	panic(errors.New("not implemented"))
 }
 
 func (noopInstanciator) IsNil() bool {
