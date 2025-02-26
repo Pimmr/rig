@@ -215,12 +215,20 @@ func TestFlagFromInterface(t *testing.T) {
 				expected: Int64(new(int64), flagName, envName, usage),
 			},
 			{
+				in:       new(int32),
+				expected: Int32(new(int32), flagName, envName, usage),
+			},
+			{
 				in:       new(uint),
 				expected: Uint(new(uint), flagName, envName, usage),
 			},
 			{
 				in:       new(uint64),
 				expected: Uint64(new(uint64), flagName, envName, usage),
+			},
+			{
+				in:       new(uint32),
+				expected: Uint32(new(uint32), flagName, envName, usage),
 			},
 			{
 				in:       new(string),
@@ -282,8 +290,10 @@ func TestFlagFromInterface(t *testing.T) {
 		var (
 			intPtr      *int
 			int64Ptr    *int64
+			int32Ptr    *int32
 			uintPtr     *uint
 			uint64Ptr   *uint64
+			uint32Ptr   *uint32
 			stringPtr   *string
 			boolPtr     *bool
 			durationPtr *time.Duration
@@ -308,6 +318,11 @@ func TestFlagFromInterface(t *testing.T) {
 				setIn:    "-21",
 			},
 			{
+				in:       &int32Ptr,
+				expected: Pointer(Int32(int32Ptr, flagName, envName, usage), &int32Ptr),
+				setIn:    "-21",
+			},
+			{
 				in:       &uintPtr,
 				expected: Pointer(Uint(uintPtr, flagName, envName, usage), &uintPtr),
 				setIn:    "84",
@@ -315,6 +330,11 @@ func TestFlagFromInterface(t *testing.T) {
 			{
 				in:       &uint64Ptr,
 				expected: Pointer(Uint64(uint64Ptr, flagName, envName, usage), &uint64Ptr),
+				setIn:    "13",
+			},
+			{
+				in:       &uint32Ptr,
+				expected: Pointer(Uint32(uint32Ptr, flagName, envName, usage), &uint32Ptr),
 				setIn:    "13",
 			},
 			{
@@ -400,12 +420,20 @@ func TestFlagFromInterface(t *testing.T) {
 				expected: Repeatable(new([]int64), Int64Generator(), flagName, envName, usage),
 			},
 			{
+				in:       new([]int32),
+				expected: Repeatable(new([]int32), Int32Generator(), flagName, envName, usage),
+			},
+			{
 				in:       new([]uint),
 				expected: Repeatable(new([]uint), UintGenerator(), flagName, envName, usage),
 			},
 			{
 				in:       new([]uint64),
 				expected: Repeatable(new([]uint64), Uint64Generator(), flagName, envName, usage),
+			},
+			{
+				in:       new([]uint32),
+				expected: Repeatable(new([]uint32), Uint32Generator(), flagName, envName, usage),
 			},
 			{
 				in:       new([]string),
