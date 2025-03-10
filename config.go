@@ -87,9 +87,45 @@ func (c *Config) Parse(arguments []string) error {
 		}
 	}
 
+	err = parsePositionals(c.Flags, c.FlagSet.Args())
+	if err != nil {
+		return c.handleError(err)
+	}
+
 	err = c.handleMissingFlags()
 	if err != nil {
 		return c.handleError(err)
+	}
+
+	return nil
+}
+
+func parsePositionals(flags []*Flag, args []string) error {
+	positionalFlags := []*Flag{}
+	for _, flag := range flags {
+		if !flag.Positional {
+			continue
+		}
+		positionalFlags = append(positionalFlags, flag)
+	}
+
+	if len(positionalFlags) == 0 {
+		return nil
+	}
+
+	for _, arg := range args {
+		if len(positionalFlags) == 0 {
+			return errors.New("unexpected positional argument")
+		}
+
+		err := positionalFlags[0].Set(arg)
+		if err != nil {
+			return err
+		}
+
+		if _, ok := positionalFlags[0].Value.(sliceValue); len(positionalFlags) > 1 || !ok {
+			positionalFlags = positionalFlags[1:]
+		}
 	}
 
 	return nil
@@ -155,19 +191,67 @@ func (c *Config) Usage() {
 	c.setDefaultValues()
 
 	sort.Slice(c.Flags, func(i, j int) bool {
+		if c.Flags[i].Positional || c.Flags[j].Positional {
+			return false
+		}
+
 		return c.Flags[i].Required && !c.Flags[j].Required
 	})
 
-	fmt.Fprintf(c.FlagSet.Output(), "Usage of %s:\n", c.FlagSet.Name())
 	lines := make([][]string, 0, len(c.Flags))
+	hasNonPos := false
+	positionals := []*Flag{}
 	for _, f := range c.Flags {
 		if f.Name == "" && f.Env == "" {
+			continue
+		}
+		if !f.Positional {
+			hasNonPos = true
+			continue
+		}
+
+		line := c.flagUsage(f)
+		lines = append(lines, line)
+
+		positionals = append(positionals, f)
+	}
+
+	if len(lines) > 0 {
+		lines = append(lines, []string{""})
+	}
+
+	for _, f := range c.Flags {
+		if (f.Name == "" && f.Env == "") || f.Positional {
 			continue
 		}
 
 		line := c.flagUsage(f)
 		lines = append(lines, line)
 	}
+
+	b := &strings.Builder{}
+	fmt.Fprintf(b, "Usage of %s", c.FlagSet.Name())
+	if hasNonPos {
+		fmt.Fprint(b, " [options]")
+	}
+	for _, pos := range positionals {
+		name := pos.Env
+		if name == "" {
+			name = pos.Name
+		}
+		if _, ok := pos.Value.(sliceValue); ok {
+			name += "..."
+		}
+		if pos.Required {
+			fmt.Fprintf(b, " %s", name)
+		} else {
+			fmt.Fprintf(b, " [%s]", name)
+		}
+	}
+
+	fmt.Fprint(b, ":\n")
+	fmt.Fprint(c.FlagSet.Output(), b.String())
+	// fmt.Fprintf(c.FlagSet.Output(), "Usage of %s:\n", c.FlagSet.Name())
 
 	printUsageLines(c.FlagSet.Output(), lines, 2, 4)
 }
@@ -178,6 +262,10 @@ func printUsageLines(output io.Writer, lines [][]string, margin, sep int) {
 	for _, line := range lines {
 		delta := 0
 		totalOffset := 0
+		if len(line) == 1 && line[0] == "" {
+			fmt.Fprint(output, "\n")
+			continue
+		}
 		for i, col := range line {
 			for j := 0; j < offsets[i]-delta; j++ {
 				fmt.Fprint(output, " ")
@@ -277,6 +365,15 @@ func (c *Config) flagUsageDoc(f *Flag) string {
 		s += fmt.Sprintf("(default %q)", f.defaultValue)
 	case f.Required:
 		s += "(required)"
+	}
+
+	if f.Positional {
+		switch s {
+		default:
+			s += " (positional)"
+		case "":
+			s = "(positional)"
+		}
 	}
 
 	return s

@@ -9,11 +9,12 @@ import (
 // A Flag represents the state and definition of a flag.
 type Flag struct {
 	flag.Value
-	Name     string
-	Env      string
-	Usage    string
-	TypeHint string
-	Required bool
+	Name       string
+	Env        string
+	Usage      string
+	TypeHint   string
+	Required   bool
+	Positional bool
 
 	set          bool
 	defaultValue string

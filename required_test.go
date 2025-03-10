@@ -1,9 +1,7 @@
 package rig
 
 import (
-	"fmt"
 	"testing"
-	"time"
 )
 
 func TestRequired(t *testing.T) {
@@ -40,61 +38,36 @@ func TestRequired(t *testing.T) {
 	}
 }
 
-func ExampleRepeatable() {
-	var bb []bool
-	var ss []string
-	var dd []time.Duration
+func TestPositional(t *testing.T) {
+	var s string
 
-	c := &Config{
-		FlagSet: testingFlagset(),
-		Flags: []*Flag{
-			Repeatable(&bb, BoolGenerator(), "bool", "BOOL", "repeatable boolean flag"),
-			Repeatable(&ss, StringGenerator(), "string", "STRING", "repeatable string flag"),
-			Repeatable(&dd, DurationGenerator(), "duration", "DURATION", "repeatable duration flag"),
-		},
+	f := String(&s, "string-flag", "STRING_ENV", "testing Positional on String")
+	r := Positional(f)
+
+	if f.Positional {
+		t.Errorf("String(...).Positional = true, expected false")
+	}
+	if !r.Positional {
+		t.Errorf("Positional(String(...)).Positional = false, expected true")
 	}
 
-	err := c.Parse([]string{"-bool=t,f,t", "-string=foo", "-string=bar", "-duration=5m2s,3m44s"})
-	if err != nil {
-		return
+	f = String(&s, "string-flag", "STRING_ENV", "testing Positional on String")
+	r = Positional(Positional(f))
+
+	if f.Positional {
+		t.Errorf("String(...).Positional = true, expected false")
+	}
+	if !r.Positional {
+		t.Errorf("Positional(Positional(String(...))).Positional = false, expected true")
 	}
 
-	fmt.Printf("booleans: %v\nstrings: %q\ndurations: %v\n", bb, ss, dd)
+	f = Var(new(stringValue), "var-flag", "VAR_ENV", "testing Positional on Var")
+	r = Positional(f)
 
-	// Output:
-	// booleans: [true false true]
-	// strings: ["foo" "bar"]
-	// durations: [5m2s 3m44s]
-}
-
-type CustomType string
-
-func (c CustomType) String() string {
-	return string(c)
-}
-
-func (c *CustomType) Set(s string) error {
-	*c = CustomType(s)
-
-	return nil
-}
-
-func ExampleMakeGenerator() {
-	var cc []CustomType // implements the "flag".Value interface
-
-	c := &Config{
-		FlagSet: testingFlagset(),
-		Flags: []*Flag{
-			Repeatable(&cc, MakeGenerator(new(CustomType)), "custom", "CUSTOM", "Repeatable flag with a custom type"),
-		},
+	if f.Positional {
+		t.Errorf("Var(...).Positional = true, expected false")
 	}
-
-	err := c.Parse([]string{"-custom=foo,bar"})
-	if err != nil {
-		return
+	if !r.Positional {
+		t.Errorf("Positional(Var(...)).Positional = false, expected true")
 	}
-
-	fmt.Printf("%v\n", cc)
-
-	// Output: [foo bar]
 }

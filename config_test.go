@@ -282,6 +282,72 @@ func TestConfigParse(t *testing.T) {
 		}
 	})
 
+	t.Run("missing required positional", func(t *testing.T) {
+		var (
+			s string
+			i int
+		)
+		c := &Config{
+			FlagSet: flag.NewFlagSet("flagset", flag.ContinueOnError),
+			Flags: []*Flag{
+				String(&s, "string-flag", "STRING_ENV", ""),
+				Positional(Required(Int(&i, "int-flag", "INT_ENV", ""))),
+			},
+		}
+		buf := &bytes.Buffer{}
+		c.FlagSet.SetOutput(buf)
+
+		os.Clearenv()
+		err := c.Parse([]string{})
+		if err == nil {
+			t.Errorf("Config.Parse([]): expected error, got nil")
+		}
+	})
+
+	t.Run("malformed positional", func(t *testing.T) {
+		var (
+			s string
+			i int
+		)
+		c := &Config{
+			FlagSet: flag.NewFlagSet("flagset", flag.ContinueOnError),
+			Flags: []*Flag{
+				String(&s, "string-flag", "STRING_ENV", ""),
+				Positional(Int(&i, "int-flag", "INT_ENV", "")),
+			},
+		}
+		buf := &bytes.Buffer{}
+		c.FlagSet.SetOutput(buf)
+
+		os.Clearenv()
+		err := c.Parse([]string{"foo"})
+		if err == nil {
+			t.Errorf("Config.Parse([]): expected error, got nil")
+		}
+	})
+
+	t.Run("too many positionals", func(t *testing.T) {
+		var (
+			s string
+			i int
+		)
+		c := &Config{
+			FlagSet: flag.NewFlagSet("flagset", flag.ContinueOnError),
+			Flags: []*Flag{
+				String(&s, "string-flag", "STRING_ENV", ""),
+				Positional(Int(&i, "int-flag", "INT_ENV", "")),
+			},
+		}
+		buf := &bytes.Buffer{}
+		c.FlagSet.SetOutput(buf)
+
+		os.Clearenv()
+		err := c.Parse([]string{"42", "14"})
+		if err == nil {
+			t.Errorf("Config.Parse([]): expected error, got nil")
+		}
+	})
+
 	t.Run("valid inputs from env, no flags", func(t *testing.T) {
 		var (
 			s string

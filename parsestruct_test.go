@@ -638,14 +638,16 @@ func TestGetFlagName(t *testing.T) {
 		Tag   string
 
 		// Expected:
-		FlagName string
-		Required bool
-		Error    bool
+		FlagName   string
+		Required   bool
+		Positional bool
+		Error      bool
 	}{
 		{Field: "", Tag: "", FlagName: "", Required: false, Error: false},
 		{Field: "FooBar", Tag: "", FlagName: "foo-bar", Required: false, Error: false},
 		{Field: "FooBar", Tag: "bar-baz", FlagName: "bar-baz", Required: false, Error: false},
 		{Field: "FooBar", Tag: "bar-baz,require", FlagName: "bar-baz", Required: true, Error: false},
+		{Field: "FooBar", Tag: "bar-baz,require,positional", FlagName: "bar-baz", Required: true, Positional: true, Error: false},
 		{Field: "FooBar", Tag: "bar-baz,inline", FlagName: "", Required: false, Error: false},
 		{Field: "FooBar", Tag: "bar-baz,inline,require", FlagName: "", Required: true, Error: false},
 		{Field: "FooBar", Tag: ",inline,require", FlagName: "", Required: true, Error: false},
@@ -653,7 +655,7 @@ func TestGetFlagName(t *testing.T) {
 		{Field: "FooBar", Tag: ",invalidoption", FlagName: "", Required: false, Error: true},
 		{Field: "FooBar", Tag: ",", FlagName: "", Required: false, Error: true},
 	} {
-		got, required, err := getFlagName(test.Field, test.Tag)
+		got, required, positional, err := getFlagName(test.Field, test.Tag)
 		if test.Error && err == nil {
 			t.Errorf("getFlagName(%q, %q): expected error, got nil", test.Field, test.Tag)
 			continue
@@ -668,8 +670,11 @@ func TestGetFlagName(t *testing.T) {
 		if got != test.FlagName {
 			t.Errorf("getFlagName(%q, %q) = %q, expected %q", test.Field, test.Tag, got, test.FlagName)
 		}
-		if got != test.FlagName {
+		if required != test.Required {
 			t.Errorf("getFlagName(%q, %q) required = %v, expected %v", test.Field, test.Tag, required, test.Required)
+		}
+		if positional != test.Positional {
+			t.Errorf("getFlagName(%q, %q) positional = %v, expected %v", test.Field, test.Tag, positional, test.Positional)
 		}
 	}
 }
@@ -884,6 +889,9 @@ func ExampleParseStruct() {
 		} `flag:",inline" env:",inline"`
 
 		IgnoreMe float64 `flag:"-"`
+
+		File1 string `flag:",positional"`
+		File2 string `flag:",positional"`
 	}
 
 	conf := Configuration{}
@@ -907,6 +915,9 @@ func ExampleStructToFlags() {
 		CustomType TestFlagValue
 
 		IgnoreMe float64 `flag:"-"`
+
+		File1 string   `flag:",positional"`
+		File2 []string `flag:"files,positional" env:"-"`
 	}
 
 	conf := Configuration{
@@ -930,12 +941,15 @@ func ExampleStructToFlags() {
 	c.Usage()
 
 	// Output:
-	// Usage of test-rig:
-	//   -url website_url           URL=website_url           (required)
+	// Usage of test-rig [options] [FILE1] [files...]:
+	//   -file1 string              FILE1=string              (positional)
+	//   -files []string                                      (default "[]") (positional)
+	//
 	//   -read-timeout duration                               (default "0s")
 	//   -write-timeout duration    WRITE_TIMEOUT=duration    (default "0s")
 	//   -boolean                   BOOLEAN=bool              a boolean flag (default "false")
 	//   -custom-type value         CUSTOM_TYPE=value         (default "TestFlagValue")
+	//   -url website_url           URL=website_url           (required)
 	//   -strings []string          STRINGS=[]string          (default "[]")
 
 }
