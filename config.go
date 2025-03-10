@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"os"
-	"sort"
 	"strconv"
 	"strings"
 	"unicode"
@@ -186,17 +185,32 @@ func (c *Config) handleError(err error) error {
 	return err
 }
 
+func sortFlags(flags []*Flag) []*Flag {
+	positional := []*Flag{}
+	required := []*Flag{}
+	others := make([]*Flag, 0, len(flags))
+
+	for _, f := range flags {
+		if f.Positional {
+			positional = append(positional, f)
+			continue
+		}
+		if f.Required {
+			required = append(required, f)
+			continue
+		}
+
+		others = append(others, f)
+	}
+
+	return append(required, append(others, positional...)...)
+}
+
 // Usage prints the usage for the flags to the output defined on the underlying flag.FlagSet.
 func (c *Config) Usage() {
 	c.setDefaultValues()
 
-	sort.Slice(c.Flags, func(i, j int) bool {
-		if c.Flags[i].Positional || c.Flags[j].Positional {
-			return false
-		}
-
-		return c.Flags[i].Required && !c.Flags[j].Required
-	})
+	c.Flags = sortFlags(c.Flags)
 
 	lines := make([][]string, 0, len(c.Flags))
 	hasNonPos := false

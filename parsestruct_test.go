@@ -945,11 +945,11 @@ func ExampleStructToFlags() {
 	//   -file1 string              FILE1=string              (positional)
 	//   -files []string                                      (default "[]") (positional)
 	//
-	//   -read-timeout duration                               (default "0s")
-	//   -write-timeout duration    WRITE_TIMEOUT=duration    (default "0s")
-	//   -boolean                   BOOLEAN=bool              a boolean flag (default "false")
-	//   -custom-type value         CUSTOM_TYPE=value         (default "TestFlagValue")
 	//   -url website_url           URL=website_url           (required)
 	//   -strings []string          STRINGS=[]string          (default "[]")
+	//   -boolean                   BOOLEAN=bool              a boolean flag (default "false")
+	//   -read-timeout duration                               (default "0s")
+	//   -write-timeout duration    WRITE_TIMEOUT=duration    (default "0s")
+	//   -custom-type value         CUSTOM_TYPE=value         (default "TestFlagValue")
 
 }

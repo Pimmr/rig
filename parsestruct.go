@@ -7,7 +7,6 @@ import (
 	"os"
 	"reflect"
 	"regexp"
-	"sort"
 	"strings"
 	"time"
 	"unicode"
@@ -249,14 +248,6 @@ func flagInfo(val reflect.Value) ([]*fieldInfo, error) {
 
 		fields = append(fields, info)
 	}
-
-	sort.Slice(fields, func(i, j int) bool {
-		if fields[j].positional {
-			return false
-		}
-
-		return strings.Compare(fields[i].flag, fields[j].flag) < 0
-	})
 
 	return fields, nil
 }
