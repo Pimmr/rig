@@ -28,6 +28,6 @@ func ExampleTypeHint() {
 	c.Usage()
 
 	// Output:
-	// Usage of rig-test:
+	// Usage of rig-test [options]:
 	//   -contact "email address"    CONTACT="email address"    Administrative contact
 }

@@ -7,7 +7,6 @@ import (
 	"os"
 	"reflect"
 	"regexp"
-	"sort"
 	"strings"
 	"time"
 	"unicode"
@@ -17,17 +16,18 @@ type fieldInfo struct {
 	field reflect.Value
 	typ   reflect.StructField
 
-	flag     string
-	env      string
-	usage    string
-	typeHint string
-	required bool
+	flag       string
+	env        string
+	usage      string
+	typeHint   string
+	required   bool
+	positional bool
 
 	isStruct bool
 }
 
 func getFieldInfo(field reflect.Value, typ reflect.StructField) (*fieldInfo, error) {
-	flagName, required, err := getFlagName(typ.Name, typ.Tag.Get("flag"))
+	flagName, required, positional, err := getFlagName(typ.Name, typ.Tag.Get("flag"))
 	if err != nil {
 		return nil, err
 	}
@@ -43,11 +43,12 @@ func getFieldInfo(field reflect.Value, typ reflect.StructField) (*fieldInfo, err
 		field: field,
 		typ:   typ,
 
-		flag:     flagName,
-		env:      envName,
-		usage:    typ.Tag.Get("usage"),
-		typeHint: typ.Tag.Get("typehint"),
-		required: required,
+		flag:       flagName,
+		env:        envName,
+		usage:      typ.Tag.Get("usage"),
+		typeHint:   typ.Tag.Get("typehint"),
+		required:   required,
+		positional: positional,
 
 		isStruct: field.Kind() == reflect.Struct && !isFlagValue(field),
 	}
@@ -68,11 +69,12 @@ func isFlagValue(field reflect.Value) bool {
 }
 
 const (
-	inlineOpt  = "inline"
-	requireOpt = "require"
+	inlineOpt     = "inline"
+	requireOpt    = "require"
+	positionalOpt = "positional"
 )
 
-func getFlagName(fieldName, tag string) (flagName string, required bool, err error) {
+func getFlagName(fieldName, tag string) (flagName string, required, positional bool, err error) {
 	inline := false
 	tt := strings.Split(tag, ",")
 	if len(tt) > 0 {
@@ -90,15 +92,19 @@ func getFlagName(fieldName, tag string) (flagName string, required bool, err err
 			required = true
 			continue
 		}
+		if t == positionalOpt {
+			positional = true
+			continue
+		}
 
-		return flagName, required, fmt.Errorf("unknown flag option %q", t)
+		return flagName, required, positional, fmt.Errorf("unknown flag option %q", t)
 	}
 
 	if !inline && flagName == "" {
 		flagName = toSnakeCase(fieldName, "-")
 	}
 
-	return flagName, required, nil
+	return flagName, required, positional, nil
 }
 
 func getEnvName(fieldName, tag string) (envName string, err error) {
@@ -220,6 +226,7 @@ func StructToFlags(v interface{}) ([]*Flag, error) {
 		}
 		f = applyTypeHint(f, info.typeHint)
 		f = applyRequired(f, info.required)
+		f.Positional = info.positional
 		flags = append(flags, f)
 	}
 
@@ -241,10 +248,6 @@ func flagInfo(val reflect.Value) ([]*fieldInfo, error) {
 
 		fields = append(fields, info)
 	}
-
-	sort.Slice(fields, func(i, j int) bool {
-		return strings.Compare(fields[i].flag, fields[j].flag) < 0
-	})
 
 	return fields, nil
 }
